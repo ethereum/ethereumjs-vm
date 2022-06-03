@@ -14,6 +14,11 @@ export * from './account'
 export * from './address'
 
 /**
+ * EthereumJS Extended Errors
+ */
+export * from './errors'
+
+/**
  * ECDSA signature
  */
 export * from './signature'

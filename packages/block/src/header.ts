@@ -22,6 +22,9 @@ import {
   toType,
   TypeOutput,
   zeros,
+  ValueError,
+  UsageError,
+  ErrorCode,
 } from 'ethereumjs-util'
 import RLP from 'rlp'
 import { Blockchain, BlockHeaderBuffer, BlockOptions, HeaderData, JsonHeader } from './types'
@@ -73,10 +76,13 @@ export class BlockHeader {
    */
   get prevRandao() {
     if (!this._common.isActivatedEIP(4399)) {
-      const msg = this._errorMsg(
-        'The prevRandao parameter can only be accessed when EIP-4399 is activated'
+      throw new UsageError(
+        'The prevRandao parameter can only be accessed when EIP-4399 is activated',
+        ErrorCode.EIP_NOT_ACTIVATED,
+        {
+          objectContext: this.errorStr(),
+        }
       )
-      throw new Error(msg)
     }
     return this.mixHash
   }
@@ -101,7 +107,10 @@ export class BlockHeader {
     const values = arrToBufArr(RLP.decode(Uint8Array.from(serialized))) as Buffer[]
 
     if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized header input. Must be array')
+      throw new ValueError(
+        'Invalid serialized header input. Must be array',
+        ErrorCode.INVALID_VALUE
+      )
     }
 
     return BlockHeader.fromValuesArray(values, opts)
@@ -134,10 +143,16 @@ export class BlockHeader {
     ] = values
 
     if (values.length > 16) {
-      throw new Error('invalid header. More values than expected were received')
+      throw new ValueError(
+        'invalid header. More values than expected were received',
+        ErrorCode.TOO_MANY_VALUES
+      )
     }
     if (values.length < 15) {
-      throw new Error('invalid header. Less values than expected were received')
+      throw new ValueError(
+        'invalid header. Less values than expected were received',
+        ErrorCode.TOO_FEW_VALUES
+      )
     }
 
     return new BlockHeader(
@@ -179,8 +194,9 @@ export class BlockHeader {
     }
 
     if (options.hardforkByBlockNumber !== undefined && options.hardforkByTD !== undefined) {
-      throw new Error(
-        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`
+      throw new UsageError(
+        `The hardforkByBlockNumber and hardforkByTD options can't be used in conjunction`,
+        ErrorCode.INVALID_OPTION_USAGE
       )
     }
 
@@ -243,7 +259,10 @@ export class BlockHeader {
       }
     } else {
       if (baseFeePerGas) {
-        throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+        throw new UsageError(
+          'A base fee for a block can only be set with EIP1559 being activated',
+          ErrorCode.EIP_NOT_ACTIVATED
+        )
       }
     }
 
@@ -312,42 +331,50 @@ export class BlockHeader {
     } = this
 
     if (parentHash.length !== 32) {
-      const msg = this._errorMsg(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
-      throw new Error(msg)
+      throw new ValueError(`parentHash must be 32 bytes`, ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${parentHash.length} bytes`,
+      })
     }
     if (stateRoot.length !== 32) {
-      const msg = this._errorMsg(`stateRoot must be 32 bytes, received ${stateRoot.length} bytes`)
-      throw new Error(msg)
+      throw new ValueError(`stateRoot must be 32 bytes`, ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${stateRoot.length} bytes`,
+      })
     }
     if (transactionsTrie.length !== 32) {
-      const msg = this._errorMsg(
-        `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`
-      )
-      throw new Error(msg)
+      throw new ValueError('transactionsTrie must be 32 bytes', ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${transactionsTrie.toString('hex')} (${transactionsTrie.length} bytes)`,
+      })
     }
     if (receiptTrie.length !== 32) {
-      const msg = this._errorMsg(
-        `receiptTrie must be 32 bytes, received ${receiptTrie.length} bytes`
-      )
-      throw new Error(msg)
+      throw new ValueError('receiptTrie must be 32 bytes', ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${receiptTrie.toString('hex')} (${receiptTrie.length} bytes)`,
+      })
     }
     if (mixHash.length !== 32) {
-      const msg = this._errorMsg(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
-      throw new Error(msg)
+      throw new ValueError('mixHash must be 32 bytes', ErrorCode.INVALID_VALUE_LENGTH, {
+        objectContext: this.errorStr(),
+        received: `${mixHash.toString('hex')} (${mixHash.length} bytes)`,
+      })
     }
 
     if (nonce.length !== 8) {
       // Hack to check for Kovan due to non-standard nonce length (65 bytes)
       if (this._common.networkId() === BigInt(42)) {
         if (nonce.length !== 65) {
-          const msg = this._errorMsg(
-            `nonce must be 65 bytes on kovan, received ${nonce.length} bytes`
-          )
-          throw new Error(msg)
+          throw new ValueError('nonce must be 65 bytes on kovan', ErrorCode.INVALID_VALUE_LENGTH, {
+            objectContext: this.errorStr(),
+            received: `${nonce.toString('hex')} (${nonce.length} bytes)`,
+          })
         }
       } else {
-        const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
-        throw new Error(msg)
+        throw new ValueError('nonce must be 8 bytes', ErrorCode.INVALID_VALUE_LENGTH, {
+          objectContext: this.errorStr(),
+          received: `${nonce.toString('hex')} (${nonce.length} bytes)`,
+        })
       }
     }
 
@@ -377,8 +404,9 @@ export class BlockHeader {
         error = true
       }
       if (error) {
-        const msg = this._errorMsg(`Invalid PoS block${errorMsg}`)
-        throw new Error(msg)
+        throw new ValueError(`Invalid PoS block${errorMsg}`, ErrorCode.INVALID_OBJECT, {
+          objectContext: this.errorStr(),
+        })
       }
     }
   }
@@ -390,14 +418,22 @@ export class BlockHeader {
    */
   canonicalDifficulty(parentBlockHeader: BlockHeader): bigint {
     if (this._common.consensusType() !== ConsensusType.ProofOfWork) {
-      const msg = this._errorMsg('difficulty calculation is only supported on PoW chains')
-      throw new Error(msg)
+      throw new UsageError(
+        'difficulty calculation is only supported on PoW chains',
+        ErrorCode.INVALID_METHOD_CALL,
+        {
+          objectContext: this.errorStr(),
+        }
+      )
     }
     if (this._common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-      const msg = this._errorMsg(
-        'difficulty calculation currently only supports the ethash algorithm'
+      throw new UsageError(
+        'difficulty calculation currently only supports the ethash algorithm',
+        ErrorCode.INVALID_METHOD_CALL,
+        {
+          objectContext: this.errorStr(),
+        }
       )
-      throw new Error(msg)
     }
     const hardfork = this._common.hardfork()
     const blockTs = this.timestamp
@@ -475,16 +511,23 @@ export class BlockHeader {
   validateCliqueDifficulty(blockchain: Blockchain): boolean {
     this._requireClique('validateCliqueDifficulty')
     if (this.difficulty !== CLIQUE_DIFF_INTURN && this.difficulty !== CLIQUE_DIFF_NOTURN) {
-      const msg = this._errorMsg(
-        `difficulty for clique block must be INTURN (2) or NOTURN (1), received: ${this.difficulty}`
+      throw new ValueError(
+        'difficulty for clique block must be INTURN (2) or NOTURN (1)',
+        ErrorCode.INVALID_VALUE,
+        {
+          objectContext: this.errorStr(),
+          received: `${this.difficulty}`,
+        }
       )
-      throw new Error(msg)
     }
     if ('cliqueActiveSigners' in (blockchain as any).consensus === false) {
-      const msg = this._errorMsg(
-        'PoA blockchain requires method blockchain.consensus.cliqueActiveSigners() to validate clique difficulty'
+      throw new UsageError(
+        'PoA blockchain requires method blockchain.consensus.cliqueActiveSigners() to validate clique difficulty',
+        ErrorCode.INCOMPATIBLE_LIBRARY_VERSION,
+        {
+          objectContext: this.errorStr(),
+        }
       )
-      throw new Error(msg)
     }
     const signers = (blockchain as any).consensus.cliqueActiveSigners()
     if (signers.length === 0) {
