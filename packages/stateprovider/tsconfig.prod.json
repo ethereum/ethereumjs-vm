@@ -1,0 +1,17 @@
+{
+  "extends": "../../config/tsconfig.prod.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "composite": true
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../common/tsconfig.prod.json" },
+    { "path": "../statemanager/tsconfig.prod.json" },
+    { "path": "../trie/tsconfig.prod.json" },
+    { "path": "../tx/tsconfig.prod.json" },
+    { "path": "../util/tsconfig.prod.json" },
+    { "path": "../vm/tsconfig.prod.json" }
+  ]
+}

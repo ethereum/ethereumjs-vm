@@ -1,0 +1,71 @@
+{
+  "name": "@ethereumjs/stateprovider",
+  "version": "1.0.2",
+  "description": "Ethers State Manager",
+  "keywords": [
+    "ethereum",
+    "ethers",
+    "statemanager",
+    "ethersStateManager",
+    "ethersForkedStateProvider"
+  ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/stateprovider#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+stateprovider%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MPL-2.0",
+  "author": "EthereumJS Team",
+  "contributors": [
+    "g11tech <gajinder@g11.in>",
+    "acolytec3 <>",
+    "ScottyPoi <>"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "../../config/cli/coverage.sh",
+    "docs:build": "typedoc --options typedoc.js",
+    "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh && npm run test:node",
+    "tape": "tape -r ts-node/register",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "karma start karma.conf.js",
+    "test:node": "npm run tape -- test/*.spec.ts",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "debug": "^4.3.3",
+    "ethers": "^5.7.1"
+  },
+  "devDependencies": {
+    "@ethereumjs/statemanager": "1.0.2",
+    "@ethereumjs/tx": "^4.0.1",
+    "@ethereumjs/util": "^8.0.3",
+    "@ethereumjs/vm": "^6.3.0",
+    "@types/node": "^16.11.7",
+    "@types/tape": "^4.13.2",
+    "eslint": "^8.0.0",
+    "karma": "^6.3.2",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^2.1.0",
+    "karma-tap": "^4.2.0",
+    "karma-typescript": "^5.5.3",
+    "nyc": "^15.1.0",
+    "standard": "^10.0.0",
+    "tape": "^5.3.1",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.2"
+  }
+}

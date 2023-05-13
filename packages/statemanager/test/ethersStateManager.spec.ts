@@ -131,6 +131,33 @@ tape('Ethers State Manager API tests', async (t) => {
 
     t.equal(deletedSlot.length, 0, 'deleted slot from storage cache')
 
+    await state.putContractStorage(
+      UNIerc20ContractAddress,
+      setLengthLeft(bigIntToBuffer(3n), 32),
+      Buffer.from('0xfeed')
+    )
+    const thirdSlot = await state.getContractStorage(
+      UNIerc20ContractAddress,
+      setLengthLeft(bigIntToBuffer(3n), 32)
+    )
+
+    t.equal(thirdSlot.length > 0, true, 'storage slot has a value')
+    await state.putContractStorage(
+      UNIerc20ContractAddress,
+      setLengthLeft(bigIntToBuffer(3n), 32),
+      Buffer.from('0x0000')
+    )
+    const _deletedSlot = await state.getContractStorage(
+      UNIerc20ContractAddress,
+      setLengthLeft(bigIntToBuffer(2n), 32)
+    )
+
+    t.equal(
+      _deletedSlot.length,
+      0,
+      'putting buffer of zeros into slot deleted value from storage cache'
+    )
+
     await state.deleteAccount(vitalikDotEth)
     t.ok(await state.accountExists(vitalikDotEth), 'account should not exist after being deleted')
 

@@ -162,12 +162,14 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * If it is empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    let accountStorage = this.storageCache.get(address.toString())
-    if (accountStorage === undefined) {
-      this.storageCache.set(address.toString(), new Map<string, Buffer>())
-      accountStorage = this.storageCache.get(address.toString())
+    const accountStorage = this.storageCache.get(address.toString()) ?? new Map<string, Buffer>()
+
+    if (value.length === 0 || value.equals(Buffer.alloc(value.length).fill(0))) {
+      accountStorage.set(key.toString('hex'), Buffer.from([]))
+    } else {
+      accountStorage.set(key.toString('hex'), value)
     }
-    accountStorage?.set(key.toString('hex'), value)
+    this.storageCache.set(address.toString(), accountStorage)
   }
 
   /**
