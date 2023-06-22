@@ -23,20 +23,22 @@ describe('Istanbul: EIP-1344', () => {
     }
 
     for (const testCase of testCases) {
-      const { chain, hardfork } = testCase
-      const common = new Common({ chain, hardfork })
-      const vm = await VM.create({ common })
-      try {
-        const res = await vm.evm.runCode!(runCodeArgs)
-        if (testCase.err !== undefined) {
-          assert.equal(res.exceptionError?.error, testCase.err)
-        } else {
-          assert.ok(res.exceptionError === undefined)
-          assert.equal(testCase.chainId, bytesToBigInt(res.returnValue))
+      it('should run test', async () => {
+        const { chain, hardfork } = testCase
+        const common = new Common({ chain, hardfork })
+        const vm = await VM.create({ common })
+        try {
+          const res = await vm.evm.runCode!(runCodeArgs)
+          if (testCase.err !== undefined) {
+            assert.equal(res.exceptionError?.error, testCase.err)
+          } else {
+            assert.ok(res.exceptionError === undefined)
+            assert.equal(testCase.chainId, bytesToBigInt(res.returnValue))
+          }
+        } catch (e: any) {
+          assert.fail(e.message)
         }
-      } catch (e: any) {
-        assert.fail(e.message)
-      }
+      })
     }
   })
 })

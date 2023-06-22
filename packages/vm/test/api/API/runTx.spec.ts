@@ -13,9 +13,8 @@ import * as kzg from 'c-kzg'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
-
-import { createAccount, getTransaction, setBalance } from './utils'
+import { VM } from '../../../src/vm'
+import { createAccount, getTransaction, setBalance } from '../utils'
 
 import type { FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 

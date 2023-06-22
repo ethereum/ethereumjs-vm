@@ -6,9 +6,8 @@ import { Account, Address, concatBytesNoTypeCheck } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
-
-import { setBalance } from './utils'
+import { VM } from '../../../src/vm'
+import { setBalance } from '../utils'
 
 describe('BlockBuilder', () => {
   it('should build a valid block', async () => {
@@ -292,15 +291,17 @@ describe('BlockBuilder', () => {
     }
 
     for (const tx of [tx1, tx2]) {
-      try {
-        await blockBuilder.addTransaction(tx)
-        assert.fail('should throw error')
-      } catch (error: any) {
-        assert.ok(
-          (error.message as string).includes("is less than the block's baseFeePerGas"),
-          'should fail with appropriate error'
-        )
-      }
+      it(`should throw with error: is less than the block's baseFeePerGas`, async () => {
+        try {
+          await blockBuilder.addTransaction(tx)
+          assert.fail('should throw error')
+        } catch (error: any) {
+          assert.ok(
+            (error.message as string).includes("is less than the block's baseFeePerGas"),
+            'should fail with appropriate error'
+          )
+        }
+      })
     }
 
     // Set up correctly priced txs

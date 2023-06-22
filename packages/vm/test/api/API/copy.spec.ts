@@ -1,7 +1,7 @@
 import { Account, Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { setupVM } from './utils'
+import { setupVM } from '../utils'
 
 describe('VM Copy Test', () => {
   it('should pass copy of state manager', async () => {

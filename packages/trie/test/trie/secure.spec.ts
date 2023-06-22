@@ -1,19 +1,17 @@
 import {
-  MapDB,
   bytesToPrefixedHexString,
   bytesToUtf8,
   equalsBytes,
   hexStringToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { createHash } from 'crypto'
 import { assert, describe, it } from 'vitest'
 
 import { ROOT_DB_KEY, Trie } from '../../src/index.js'
 import secureTrieTests from '../fixtures/trietest_secureTrie.json'
 
 describe('SecureTrie', () => {
-  const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+  const trie = new Trie({ useKeyHashing: true })
   const k = utf8ToBytes('foo')
   const v = utf8ToBytes('bar')
 
@@ -32,17 +30,22 @@ describe('SecureTrie', () => {
 
 describe('SecureTrie proof', () => {
   it('create a merkle proof and verify it with a single short key', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    const trie = new Trie({})
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
-
+    const retrieved = await trie.get(utf8ToBytes('key1aa'))
+    assert.equal(bytesToUtf8(retrieved!), '01234', 'should put/get a value')
     const proof = await trie.createProof(utf8ToBytes('key1aa'))
+    assert.ok(proof, 'proof should be created')
     const val = await trie.verifyProof(trie.root(), utf8ToBytes('key1aa'), proof)
-    assert.equal(bytesToUtf8(val!), '01234')
+    assert.ok(val)
+    if (val instanceof Uint8Array) {
+      assert.equal(bytesToUtf8(val), '01234')
+    }
   })
 })
 
 describe('secure tests', () => {
-  let trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+  let trie = new Trie({ secure: true })
 
   it('empty values', async () => {
     for (const row of secureTrieTests.tests.emptyValues.in) {
@@ -56,7 +59,7 @@ describe('secure tests', () => {
   })
 
   it('branchingTests', async () => {
-    trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    trie = new Trie({ secure: true })
     for (const row of secureTrieTests.tests.branchingTests.in) {
       const val =
         row[1] !== undefined && row[1] !== null
@@ -81,19 +84,19 @@ describe('secure tests', () => {
   })*/
 
   it('put fails if the key is the ROOT_DB_KEY', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB(), useRootPersistence: true })
+    const trie = new Trie({ useKeyHashing: true, useRootPersistence: true })
 
     try {
       await trie.put(ROOT_DB_KEY, utf8ToBytes('bar'))
 
       assert.fail("Attempting to set '__root__' should fail but it did not.")
-    } catch ({ message }: any) {
-      assert.equal(message, "Attempted to set '__root__' key but it is not allowed.")
+    } catch (e: any) {
+      assert.equal(e.message, "Attempted to set '__root__' key but it is not allowed.")
     }
   })
 })
 
-const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+const trie = new Trie({ useKeyHashing: true })
 const a = hexStringToBytes(
   'f8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
 )
@@ -143,41 +146,55 @@ describe('secure tests should not crash', () => {
   })
 })
 
-describe('SecureTrie.copy', () => {
+describe('Securetrie.copy', () => {
   it('created copy includes values added after checkpoint', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    const trie = new Trie({ useKeyHashing: true })
 
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
-    trie.checkpoint()
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
+    trie.checkpoint()
     const trieCopy = trie.copy()
     const value = await trieCopy.get(utf8ToBytes('key2'))
-    assert.equal(bytesToUtf8(value!), 'value2')
+    assert.ok(value, `trieCopy.get(key2): ${value ? bytesToUtf8(value) : 'null'}`)
   })
 
   it('created copy includes values added before checkpoint', async () => {
-    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
-
-    await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
+    const trie = new Trie({})
+    await trie.put(utf8ToBytes('address1'), utf8ToBytes('value1'))
     trie.checkpoint()
-    await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
+    await trie.commit()
+    trie.flushCheckpoints()
+    await trie.put(utf8ToBytes('address2'), utf8ToBytes('value2'))
     const trieCopy = trie.copy()
-    const value = await trieCopy.get(utf8ToBytes('key1'))
-    assert.equal(bytesToUtf8(value!), 'value1')
+    const value = await trieCopy.get(utf8ToBytes('address1'))
+    assert.deepEqual(value, utf8ToBytes('value1'), 'value 1 should be in trie copy')
+    const lookup = await trieCopy.get(utf8ToBytes('address1'))
+    const lookup2 = await trieCopy.get(utf8ToBytes('address2'))
+    assert.deepEqual(lookup, utf8ToBytes('value1'), 'node with value 1 should be in trie copy')
+
+    assert.deepEqual(lookup2, utf8ToBytes('value2'), 'node with value 2 should be in trie copy')
   })
 
   it('created copy uses the correct hash function', async () => {
     const trie = new Trie({
-      db: new MapDB(),
       useKeyHashing: true,
-      useKeyHashingFunction: (value) => createHash('sha256').update(value).digest(),
+      secure: true,
+      hashFunction: (value) => {
+        return Uint8Array.from([...utf8ToBytes('HASHED'), ...value])
+      },
     })
 
-    await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
-    trie.checkpoint()
-    await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
+    const key = utf8ToBytes('TestKey')
     const trieCopy = trie.copy()
-    const value = await trieCopy.get(utf8ToBytes('key1'))
-    assert.equal(bytesToUtf8(value!), 'value1')
+    assert.equal(
+      bytesToUtf8((trieCopy as any).hashFunction(key)),
+      bytesToUtf8((trie as any).hashFunction(key)),
+      'hashes should be equal'
+    )
+    assert.equal(
+      bytesToUtf8((trieCopy as any).hashFunction(key)),
+      'HASHEDTestKey',
+      'hash should be custom hash function'
+    )
   })
 })

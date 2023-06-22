@@ -5,8 +5,8 @@ import { Address } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
-import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.cjs'
-import { getAccountNonce, insertAccount } from './helpers/account-utils.cjs'
+import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder'
+import { getAccountNonce, insertAccount } from './helpers/account-utils'
 import { Block } from '@ethereumjs/block'
 import { bytesToHex, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 const solc = require('solc')
@@ -102,9 +102,7 @@ async function deployContract(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(buildTransaction(txData), { common }).sign(
-    senderPrivateKey
-  )
+  const tx = LegacyTransaction.fromTxData(txData, { common }).sign(senderPrivateKey)
 
   const deploymentResult = await vm.runTx({ tx, block })
 
@@ -132,9 +130,7 @@ async function setGreeting(
     nonce: await getAccountNonce(vm, senderPrivateKey),
   }
 
-  const tx = LegacyTransaction.fromTxData(buildTransaction(txData), { common }).sign(
-    senderPrivateKey
-  )
+  const tx = LegacyTransaction.fromTxData(txData, { common }).sign(senderPrivateKey)
 
   const setGreetingResult = await vm.runTx({ tx, block })
 

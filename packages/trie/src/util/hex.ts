@@ -1,11 +1,10 @@
-import type { Nibbles } from '../types.js'
-
 /**
  * Prepends hex prefix to an array of nibbles.
  * @param key - Array of nibbles
  * @returns returns buffer of encoded data
  **/
-export function addHexPrefix(key: Nibbles, terminator: boolean): Nibbles {
+export function addHexPrefix(_key: number[], terminator: boolean): number[] {
+  const key = [..._key]
   // odd
   if (key.length % 2) {
     key.unshift(1)
@@ -27,7 +26,8 @@ export function addHexPrefix(key: Nibbles, terminator: boolean): Nibbles {
  * @param val - Array of nibbles
  * @private
  */
-export function removeHexPrefix(val: Nibbles): Nibbles {
+export function removeHexPrefix(_val: number[]): number[] {
+  let val = [..._val]
   if (val[0] % 2) {
     val = val.slice(1)
   } else {
@@ -42,6 +42,6 @@ export function removeHexPrefix(val: Nibbles): Nibbles {
  * @param key - a hex-prefixed array of nibbles
  * @private
  */
-export function isTerminator(key: Nibbles): boolean {
+export function isTerminator(key: number[]): boolean {
   return key[0] > 1
 }

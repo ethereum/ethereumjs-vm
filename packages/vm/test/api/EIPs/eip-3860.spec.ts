@@ -9,7 +9,7 @@ const pkey = hexToBytes('20'.repeat(32))
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
-describe('EIP 3860 tests', () => {
+describe('EIP 3860 tests', async () => {
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.London,

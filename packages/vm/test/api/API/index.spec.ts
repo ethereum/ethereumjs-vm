@@ -7,14 +7,13 @@ import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as util from 'util' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
+import { VM } from '../../../src/vm'
+import * as testnet from '../testdata/testnet.json'
+import * as testnet2 from '../testdata/testnet2.json'
+import * as testnetMerge from '../testdata/testnetMerge.json'
+import { setupVM } from '../utils'
 
-import * as testnet from './testdata/testnet.json'
-import * as testnet2 from './testdata/testnet2.json'
-import * as testnetMerge from './testdata/testnetMerge.json'
-import { setupVM } from './utils'
-
-import type { VMOpts } from '../../src'
+import type { VMOpts } from '../../../src'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 /**

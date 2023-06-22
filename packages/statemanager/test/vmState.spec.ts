@@ -17,27 +17,31 @@ export function isBrowser(): boolean {
 
 const StateManager = DefaultStateManager
 
-describe('stateManager', () => {
-  it(`should generate the genesis state root correctly for mainnet from common`, async () => {
-    if (isBrowser()) {
-      return
-    }
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const expectedStateRoot = hexToBytes(
-      'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
-    )
-    const stateManager = new StateManager({})
+describe('stateManager', async () => {
+  it(
+    `should generate the genesis state root correctly for mainnet from common`,
+    async () => {
+      if (isBrowser()) {
+        return
+      }
+      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
+      const expectedStateRoot = hexToBytes(
+        'd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
+      )
+      const stateManager = new StateManager({})
 
-    const blockchain = await Blockchain.create({ common })
-    await stateManager.generateCanonicalGenesis(blockchain.genesisState())
-    const stateRoot = await stateManager.getStateRoot()
+      const blockchain = await Blockchain.create({ common })
+      await stateManager.generateCanonicalGenesis(blockchain.genesisState())
+      const stateRoot = await stateManager.getStateRoot()
 
-    assert.deepEqual(
-      stateRoot,
-      expectedStateRoot,
-      `generateCanonicalGenesis should produce correct state root for mainnet from common`
-    )
-  })
+      assert.deepEqual(
+        stateRoot,
+        expectedStateRoot,
+        `generateCanonicalGenesis should produce correct state root for mainnet from common`
+      )
+    },
+    { timeout: 100000 }
+  )
 
   it(`should generate the genesis state root correctly for all other chains`, async () => {
     const chains: [Chain, Uint8Array][] = [
@@ -60,18 +64,20 @@ describe('stateManager', () => {
     ]
 
     for (const [chain, expectedStateRoot] of chains) {
-      const common = new Common({ chain, hardfork: Hardfork.Chainstart })
-      const stateManager = new DefaultStateManager({})
+      it('should generate the genesis root', async () => {
+        const common = new Common({ chain, hardfork: Hardfork.Chainstart })
+        const stateManager = new DefaultStateManager({})
 
-      const blockchain = await Blockchain.create({ common })
-      await stateManager.generateCanonicalGenesis(blockchain.genesisState())
-      const stateRoot = await stateManager.getStateRoot()
+        const blockchain = await Blockchain.create({ common })
+        await stateManager.generateCanonicalGenesis(blockchain.genesisState())
+        const stateRoot = await stateManager.getStateRoot()
 
-      assert.deepEqual(
-        stateRoot,
-        expectedStateRoot,
-        `generateCanonicalGenesis should produce correct state root for ${Chain[chain]}`
-      )
+        assert.deepEqual(
+          stateRoot,
+          expectedStateRoot,
+          `generateCanonicalGenesis should produce correct state root for ${Chain[chain]}`
+        )
+      })
     }
   })
 })

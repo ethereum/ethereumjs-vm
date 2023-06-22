@@ -1,2 +1,2 @@
 export * from './node/index.js'
-export * from './trie.js'
+export { TrieWrap as Trie } from './trieWrapper.js'

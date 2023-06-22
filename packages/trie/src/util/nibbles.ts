@@ -1,15 +1,13 @@
 import { toBytes } from '@ethereumjs/util'
 
-import type { Nibbles } from '../types.js'
-
 /**
  * Converts a bytes to a nibble array.
  * @private
  * @param key
  */
-export function bytesToNibbles(key: Uint8Array): Nibbles {
+export function bytesToNibbles(key: Uint8Array): number[] {
   const bkey = toBytes(key)
-  const nibbles = [] as Nibbles
+  const nibbles = [] as number[]
 
   for (let i = 0; i < bkey.length; i++) {
     let q = i * 2
@@ -26,7 +24,7 @@ export function bytesToNibbles(key: Uint8Array): Nibbles {
  * @private
  * @param arr - Nibble array
  */
-export function nibblestoBytes(arr: Nibbles): Uint8Array {
+export function nibblestoBytes(arr: number[]): Uint8Array {
   const buf = new Uint8Array(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2
@@ -43,7 +41,7 @@ export function nibblestoBytes(arr: Nibbles): Uint8Array {
  * @param n1 - Nibble array
  * @param n2 - Nibble array
  */
-export function nibblesCompare(n1: Nibbles, n2: Nibbles) {
+export function nibblesCompare(n1: number[], n2: number[]) {
   const cmpLength = Math.min(n1.length, n2.length)
 
   let res = 0
@@ -74,9 +72,10 @@ export function nibblesCompare(n1: Nibbles, n2: Nibbles) {
  * @param nib1
  * @param nib2
  */
-export function matchingNibbleLength(nib1: Nibbles, nib2: Nibbles): number {
+export function matchingNibbleLength(nib1: number[], nib2: number[]): number {
+  const maxLength = Math.min(nib1.length, nib2.length)
   let i = 0
-  while (nib1[i] === nib2[i] && nib1.length > i) {
+  while (i < maxLength && nib1[i] === nib2[i]) {
     i++
   }
   return i
@@ -87,7 +86,58 @@ export function matchingNibbleLength(nib1: Nibbles, nib2: Nibbles): number {
  * @param keyA
  * @param keyB
  */
-export function doKeysMatch(keyA: Nibbles, keyB: Nibbles): boolean {
+export function doKeysMatch(keyA: number[], keyB: number[]): boolean {
   const length = matchingNibbleLength(keyA, keyB)
   return length === keyA.length && length === keyB.length
+}
+
+export function firstNibble(key: Uint8Array): number {
+  return key[0] >> 4
+}
+export function concatNibbles(a: number[], b: number[]): number[] {
+  return [...a, ...b]
+}
+export type CommonPrefixResult = {
+  commonPrefix: number[]
+  remainingNibbles1: number[]
+  remainingNibbles2: number[]
+}
+export function findCommonPrefix(nibbles1: number[], nibbles2: number[]): CommonPrefixResult {
+  const matching = matchingNibbleLength(nibbles1, nibbles2)
+  return {
+    commonPrefix: nibbles1.slice(0, matching),
+    remainingNibbles1: nibbles1.slice(matching),
+    remainingNibbles2: nibbles2.slice(matching),
+  }
+}
+export function hasMatchingNibbles(a: number[], b: number[]): boolean {
+  const minLength = Math.min(a.length, b.length)
+  for (let i = 0; i < minLength; i++) {
+    if (a[i] !== b[i]) {
+      return false
+    }
+  }
+  return true
+}
+export function getSharedNibbles(nibbles1: number[], nibbles2: number[]): number[] {
+  const sharedNibbles = []
+  for (let i = 0; i < Math.min(nibbles1.length, nibbles2.length); i++) {
+    if (nibbles1[i] !== nibbles2[i]) {
+      break
+    }
+    sharedNibbles.push(nibbles1[i])
+  }
+  return sharedNibbles
+}
+
+export function nibblesEqual(nib1: number[], nib2: number[]) {
+  if (nib1.length !== nib2.length) {
+    return false
+  }
+  for (let i = 0; i < nib1.length; i++) {
+    if (nib1[i] !== nib2[i]) {
+      return false
+    }
+  }
+  return true
 }

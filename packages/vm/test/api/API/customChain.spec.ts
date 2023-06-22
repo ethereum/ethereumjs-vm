@@ -7,10 +7,9 @@ import { Interface } from '@ethersproject/abi'
 import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
-
-import * as testChain from './testdata/testnet.json'
-import * as testnetMerge from './testdata/testnetMerge.json'
+import { VM } from '../../../src/vm'
+import * as testChain from '../testdata/testnet.json'
+import * as testnetMerge from '../testdata/testnetMerge.json'
 
 import type { AccountState } from '@ethereumjs/util'
 

@@ -11,21 +11,20 @@ import { Account, Address, KECCAK256_RLP, toBytes } from '@ethereumjs/util'
 import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
-import { getDAOCommon, setupPreConditions } from '../util'
-
-import * as testnet from './testdata/testnet.json'
-import { createAccount, setBalance, setupVM } from './utils'
+import { VM } from '../../../src/vm'
+import { getDAOCommon, setupPreConditions } from '../../util'
+import testData from '../testdata/blockchain.json'
+import * as testnet from '../testdata/testnet.json'
+import { createAccount, setBalance, setupVM } from '../utils'
 
 import type {
   AfterBlockEvent,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunBlockOpts,
-} from '../../src/types'
+} from '../../../src/types'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
-const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock tests', () => {
   it('runBlock() -> successful API parameter usage', async () => {
@@ -117,7 +116,9 @@ describe('runBlock tests', () => {
 
     it('Uncle blocks, compute uncle rewards', async () => {
       const vm = await setupVM({ common })
-      await uncleRun(vm)
+      it('should run uncle run', async () => {
+        await uncleRun(vm)
+      })
     })
 
     it('PoW block, Common custom chain (Common.custom() static constructor)', async () => {
@@ -217,7 +218,7 @@ describe('runBlock tests', () => {
 
       const block = Block.fromBlockData({
         header: {
-          ...testData.blocks[0].header,
+          ...testData.blocks[0].blockHeader,
           gasLimit: hexToBytes('8000000000000000'),
         },
       })

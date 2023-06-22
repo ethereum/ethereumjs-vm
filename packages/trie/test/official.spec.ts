@@ -11,18 +11,19 @@ describe('official tests', () => {
     const testNames = Object.keys(trieTests.tests)
     let trie = new Trie()
 
-    for (const testName of testNames) {
+    for await (const [idx, testName] of testNames.entries()) {
+      assert.ok(`Starting ${idx + 1}/${testNames.length}: ${testName}`)
       const inputs = (trieTests as any).tests[testName].in
       const expect = (trieTests as any).tests[testName].root
-      for (const input of inputs) {
+      for await (const [_i_input, input] of inputs.entries()) {
         for (let i = 0; i < 2; i++) {
           if (typeof input[i] === 'string' && input[i].slice(0, 2) === '0x') {
             input[i] = hexStringToBytes(input[i])
           } else if (typeof input[i] === 'string') {
             input[i] = utf8ToBytes(input[i])
           }
-          await trie.put(input[0], input[1])
         }
+        await trie.put(input[0], input[1])
       }
       assert.equal(bytesToPrefixedHexString(trie.root()), expect)
       trie = new Trie()

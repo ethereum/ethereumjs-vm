@@ -3,7 +3,7 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Account, Address, bytesToPrefixedHexString, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../src/vm'
+import { VM } from '../../../src/vm'
 
 describe('VM events', () => {
   const privKey = toBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')

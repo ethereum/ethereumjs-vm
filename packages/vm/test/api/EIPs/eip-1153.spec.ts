@@ -16,7 +16,7 @@ interface Test {
 
 const senderKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
-describe('EIP 1153: transient storage', () => {
+describe('EIP 1153: transient storage', async () => {
   const initialGas = BigInt(0xffffffffff)
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
 
@@ -26,31 +26,33 @@ describe('EIP 1153: transient storage', () => {
     const vm = await VM.create({ common })
 
     vm.evm.events!.on('step', function (step: any) {
-      const gasUsed = currentGas - step.gasLeft
-      currentGas = step.gasLeft
+      it('should have the correct opcode, stack, and gas used', async () => {
+        const gasUsed = currentGas - step.gasLeft
+        currentGas = step.gasLeft
 
-      assert.equal(
-        step.opcode.name,
-        test.steps[i].expectedOpcode,
-        `Expected Opcode: ${test.steps[i].expectedOpcode}`
-      )
-
-      assert.deepEqual(
-        step.stack.map((e: bigint) => e.toString()),
-        test.steps[i].expectedStack.map((e: bigint) => e.toString()),
-        `Expected stack: ${step.stack}`
-      )
-
-      if (i > 0) {
-        const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
-        assert.ok(
-          gasUsed === expectedGasUsed,
-          `Opcode: ${
-            test.steps[i - 1].expectedOpcode
-          }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`
+        assert.equal(
+          step.opcode.name,
+          test.steps[i].expectedOpcode,
+          `Expected Opcode: ${test.steps[i].expectedOpcode}`
         )
-      }
-      i++
+
+        assert.deepEqual(
+          step.stack.map((e: bigint) => e.toString()),
+          test.steps[i].expectedStack.map((e: bigint) => e.toString()),
+          `Expected stack: ${step.stack}`
+        )
+
+        if (i > 0) {
+          const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
+          assert.ok(
+            gasUsed === expectedGasUsed,
+            `Opcode: ${
+              test.steps[i - 1].expectedOpcode
+            }, Gas Used: ${gasUsed}, Expected: ${expectedGasUsed}`
+          )
+        }
+        i++
+      })
     })
 
     for (const { code, address } of test.contracts) {
@@ -656,7 +658,10 @@ describe('EIP 1153: transient storage', () => {
       ],
     }
 
-    const [result] = await runTest(test)
-    assert.equal(bytesToInt(result.execResult.returnValue), 0xaa)
+    const runTestRes = await runTest(test)
+    it('should return the correct result', async () => {
+      const [result] = runTestRes
+      assert.equal(bytesToInt(result.execResult.returnValue), 0xaa)
+    })
   })
 })

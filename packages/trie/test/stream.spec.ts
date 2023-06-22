@@ -1,9 +1,10 @@
-import { utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { EventEmitter } from 'events'
 import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src/index.js'
+import { Trie, nibblestoBytes } from '../src/index.js'
 
-import type { BatchDBOp } from '@ethereumjs/util'
+import type { BatchDBOp } from '../src'
 
 describe('kv stream test', () => {
   const trie = new Trie()
@@ -94,29 +95,47 @@ describe('kv stream test', () => {
     },
   ] as BatchDBOp[]
 
-  const valObj = {} as any
+  const valObj: Record<string, string> = {}
   for (const op of ops) {
     if (op.type === 'put') {
-      valObj[op.key.toString()] = op.value.toString()
+      valObj[bytesToUtf8(op.key)] = bytesToUtf8(op.value)
     }
   }
 
   it('should populate trie', async () => {
     await trie.batch(ops)
-  })
-
-  it('should fetch all of the nodes', () => {
+    const done = new EventEmitter()
     const stream = trie.createReadStream()
-    stream.on('data', (d: any) => {
-      const key = d.key.toString()
-      const value = d.value.toString()
-      assert.equal(valObj[key], value)
-      delete valObj[key]
+    stream.on('error', (err: any) => {
+      assert.fail(`stream error: ${err}`)
+      done.emit('done')
     })
+    const streamed: string[] = []
+    stream.on('data', (d: { key: number[]; value: Uint8Array }) => {
+      const key = bytesToUtf8(nibblestoBytes(d.key))
+      const value = bytesToUtf8(d.value)
+      if (streamed.includes(key)) {
+        // console.log('key', key, streamed)
+      } else {
+        streamed.push(key)
+
+        assert.equal(value, valObj[key], `value for key ${key} should match`)
+        delete valObj[key]
+      }
+    })
+    stream.on('close', () => {})
     stream.on('end', () => {
       const keys = Object.keys(valObj)
       assert.equal(keys.length, 0)
+      done.emit('done')
     })
+    const pass = await new Promise((res, rej) => {
+      done.once('done', () => {
+        res(true)
+        rej(false)
+      })
+    })
+    assert.ok(pass, 'test passed')
   })
 })
 

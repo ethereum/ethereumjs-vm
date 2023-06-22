@@ -1,4 +1,5 @@
 export * from './branch.js'
 export * from './extension.js'
 export * from './leaf.js'
+export * from './node.js'
 export * from './util.js'

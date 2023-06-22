@@ -1,25 +1,24 @@
 import { utf8ToBytes } from 'ethereum-cryptography/utils.js'
 
-import type { BranchNode, ExtensionNode, LeafNode } from './trie/index.js'
-import type { WalkController } from './util/walkController.js'
-import type { DB } from '@ethereumjs/util'
+import { MerklePatriciaTrie } from './trie/merklePatricia.js'
+import { TrieWithDB } from './trie/trieDB.js'
+import { TrieWrap } from './trie/trieWrapper.js'
 
-export type TrieNode = BranchNode | ExtensionNode | LeafNode
+import type { TrieDatabase } from './db/index.js'
+import type { TNode } from './trie/node/types.js'
+import type { DB, DBObject } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
+import type { LRUCache } from 'lru-cache'
 
-export type Nibbles = number[]
+export type HashFunction = (data: Uint8Array) => Uint8Array
 
-// Branch and extension nodes might store
-// hash to next node, or embed it if its len < 32
-export type EmbeddedNode = Uint8Array | Uint8Array[]
+export type PathToNode = {
+  path: TNode[]
+  remainingNibbles: number[]
+}
+export type WalkFilterFunction = (TrieNode: TNode, key: number[]) => Promise<boolean>
 
-export type Proof = Uint8Array[]
-
-export type FoundNodeFunction = (
-  nodeRef: Uint8Array,
-  node: TrieNode | null,
-  key: Nibbles,
-  walkController: WalkController
-) => void
+export type FoundNodeFunction = (TrieNode: TNode, key: number[]) => Promise<void>
 
 export type HashKeysFunction = (msg: Uint8Array) => Uint8Array
 
@@ -80,16 +79,61 @@ export type TrieOptsWithDefaults = TrieOpts & {
   cacheSize: number
 }
 
-export interface CheckpointDBOpts {
-  /**
-   * A database instance.
-   */
-  db: DB<string, string>
+export interface MerklePatriciaTrieOptions {
+  root?: TNode
+  rootHash?: Uint8Array
+  rootNodeRLP?: Uint8Array
+  nodes?: Map<Uint8Array, TNode>
+  secure?: boolean
+  hashFunction?: (data: Uint8Array) => Uint8Array
+  debug?: Debugger
+}
 
-  /**
-   * Cache size (default: 0)
-   */
+type LevelDB<
+  TKey extends Uint8Array | string = Uint8Array | string,
+  TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject
+> = DB<TKey, TValue>
+export interface TrieDBOptions extends Exclude<MerklePatriciaTrieOptions, 'nodes'> {
+  db?: LevelDB | TrieDatabase
+  cache?: LRUCache<Uint8Array, TNode>
   cacheSize?: number
+  checkpoints?: Uint8Array[]
+  maxCheckpoints?: number
+  persistent?: boolean
+  useNodePruning?: boolean
+  useKeyHashing?: boolean
+  useRootPersistence?: boolean
+}
+
+export interface TrieWrapOptions extends TrieDBOptions {}
+
+export const Tries = {
+  MERKLE_PATRICIA_TRIE: MerklePatriciaTrie,
+  TRIE_WITH_DB: TrieWithDB,
+  TRIE_WRAP: TrieWrap,
+}
+
+export type TrieType = keyof typeof Tries
+
+export type TrieOptions<T extends TrieType> = T extends 'MERKLE_PATRICIA_TRIE'
+  ? MerklePatriciaTrieOptions
+  : T extends 'TRIE_WITH_DB'
+  ? TrieDBOptions
+  : T extends 'TRIE_WRAP'
+  ? TrieWrapOptions
+  : never
+
+export type BatchDBOp = PutBatch | DelBatch
+
+export interface PutBatch {
+  type: 'put'
+  key: Uint8Array
+  value: Uint8Array
+}
+
+export interface DelBatch {
+  type: 'del'
+  key: Uint8Array
 }
 
 export type Checkpoint = {
