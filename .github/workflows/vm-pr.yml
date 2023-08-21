@@ -33,7 +33,7 @@ jobs:
 
       - run: npm run lint
       - run: npm run coverage
-      #     - run: npm run test:API:browser -- disabled until we fix browser tests for vitest
+ #     - run: npm run test:API:browser -- disabled until we fix browser tests for vitest
 
       - uses: codecov/codecov-action@v3
         with:

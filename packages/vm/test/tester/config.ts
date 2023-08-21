@@ -130,7 +130,7 @@ export function getRequiredForkConfigAlias(forkConfig: string) {
   return forkConfig
 }
 
-const normalHardforks = [
+export const normalHardforks = [
   'chainstart',
   'homestead',
   'dao',
@@ -149,7 +149,14 @@ const normalHardforks = [
   'cancun',
 ]
 
-const transitionNetworks = {
+export const transitionNetworks = {
+  ArrowGlacierToMergeAtDiffC0000: {
+    arrowGlacier: 0,
+    paris: 8,
+    dao: null,
+    finalSupportedFork: 'paris',
+    startFork: 'arrowGlacier',
+  },
   ByzantiumToConstantinopleFixAt5: {
     byzantium: 0,
     constantinople: 5,
@@ -202,7 +209,7 @@ const retestethAlias = {
   Merge: 'paris',
 }
 
-const testLegacy = {
+export const testLegacy = {
   chainstart: true,
   homestead: true,
   tangerineWhistle: true,
@@ -243,13 +250,8 @@ export function getTestDirs(network: string, testType: string) {
   }
   return testDirs
 }
-/**
- * Setups the common with networks
- * @param network Network target (this can include EIPs, such as Byzantium+1559+2929)
- * @param ttd If set: total terminal difficulty to switch to merge
- * @returns
- */
-function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number) {
+
+export function inferHardfork(network: string) {
   let networkLowercase: string // This only consists of the target hardfork, so without the EIPs
   if (network.includes('+')) {
     const index = network.indexOf('+')
@@ -262,6 +264,18 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   const hfName = normalHardforks.reduce((previousValue, currentValue) =>
     currentValue.toLowerCase() === networkLowercase ? currentValue : previousValue
   )
+  return hfName
+}
+/**
+ * Setups the common with networks
+ * @param network Network target (this can include EIPs, such as Byzantium+2537+2929)
+ * @param ttd If set: total terminal difficulty to switch to merge
+ * @returns
+ */
+export function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number): Common {
+  // normal hard fork, return the common with this hard fork
+  // find the right upper/lowercased version
+  const hfName = inferHardfork(network)
   const mainnetCommon = new Common({ chain: Chain.Mainnet, hardfork: hfName })
   const hardforks = mainnetCommon.hardforks()
   const testHardforks = []

@@ -6,15 +6,19 @@
 # ./test/tester/scripts/state-test-run-test.sh
 #############################################################
 
-ts-node ./test/tester --state --test='stackOverflow'
-ts-node ./test/tester --state --test='stackOverflow' --fork='Istanbul'
-ts-node ./test/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0
+
+STATETEST=stackOverflow npx vitest run ./test/tester/state/index.spec.ts
+STATETEST=stackOverflow FORK='istanbul' npx vitest run ./test/tester/state/index.spec.ts
+STATETEST=CreateCollisionToEmpty DATA=0 GAS=1 VALUE=0 npx vitest run ./test/tester/state/index.spec.ts
 # Test should be executed
-ts-node ./test/tester --state --test='stackOverflow' --skip=BROKEN,PERMANENT
+
+STATETEST=stackOverflow SKIP=BROKEN,PERMANENT npx vitest run ./test/tester/state/index.spec.ts
+
 # Test should be executed
-ts-node ./test/tester --state --test='stackOverflow' --skip=SLOW
+STATETEST=stackOverflow SKIP=SLOW npx vitest run ./test/tester/state/index.spec.ts
+
 # Test should not be executed (test in skip list)
-ts-node ./test/tester --state --test='UncleFromSideChain' --skip=BROKEN,PERMANENT
-ts-node ./test/tester --state --customStateTest='./node_modules/ethereumjs-testing/tests/GeneralStateTests/stCreate2/create2InitCodes.json'
-ts-node ./test/tester --state --test='CreateCollisionToEmpty' --jsontrace
+STATETEST=UncleFromSideChain SKIP=BROKEN,PERMANENT npx vitest run ./test/tester/state/index.spec.ts
+CUSTOMSTATETEST='./node_modules/ethereumjs-testing/tests/GeneralStateTests/stCreate2/create2InitCodes.json' npx vitest run ./test/tester/state/index.spec.ts
+STATETEST=CreateCollisionToEmpty JSONTRACE=true npx vitest run ./test/tester/state/index.spec.ts
  

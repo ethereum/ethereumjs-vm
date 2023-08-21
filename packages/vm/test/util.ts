@@ -20,11 +20,11 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { assert } from 'vitest'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { TxOptions } from '@ethereumjs/tx'
-import type * as tape from 'tape'
 
 export function dumpState(state: any, cb: Function) {
   function readAccounts(state: any) {
@@ -133,7 +133,7 @@ export function makeTx(
   return tx
 }
 
-export async function verifyPostConditions(state: any, testData: any, t: tape.Test) {
+export async function verifyPostConditions(state: any, testData: any) {
   return new Promise<void>((resolve) => {
     const hashedAccounts: any = {}
     const keyMap: any = {}
@@ -157,17 +157,17 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
       delete keyMap[key]
 
       if (testData !== undefined) {
-        const promise = verifyAccountPostConditions(state, address, account, testData, t)
+        const promise = verifyAccountPostConditions(state, address, account, testData)
         queue.push(promise)
       } else {
-        t.comment('invalid account in the trie: ' + <string>key)
+        assert.ok('invalid account in the trie: ' + <string>key)
       }
     })
 
     stream.on('end', async function () {
       await Promise.all(queue)
       for (const [_key, address] of Object.entries(keyMap)) {
-        t.comment(`Missing account!: ${address}`)
+        assert.ok(`Missing account!: ${address}`)
       }
       resolve()
     })
@@ -185,65 +185,64 @@ export function verifyAccountPostConditions(
   state: any,
   address: string,
   account: Account,
-  acctData: any,
-  t: tape.Test
+  acctData: any
 ) {
-  return new Promise<void>((resolve) => {
-    t.comment('Account: ' + address)
-    if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
-      t.comment(
-        `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
-          account.balance
-        }`
+  // return new Promise<void>((resolve) => {
+  assert.ok('Account: ' + address)
+  if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
+    assert.ok(
+      `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
+        account.balance
+      }`
+    )
+  }
+  if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
+    assert.ok(
+      `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`
+    )
+  }
+
+  // validate storage
+  const origRoot = state.root()
+
+  const hashedStorage: any = {}
+  for (const key in acctData.storage) {
+    hashedStorage[bytesToHex(keccak256(setLengthLeft(hexToBytes(key.slice(2)), 32)))] =
+      acctData.storage[key]
+  }
+
+  state.root(account.storageRoot)
+  const rs = state.createReadStream()
+  rs.on('data', function (data: any) {
+    let key = bytesToHex(data.key)
+    const val = bytesToHex(RLP.decode(data.value) as Uint8Array)
+
+    if (key === '0x') {
+      key = '0x00'
+      acctData.storage['0x00'] = acctData.storage['0x00'] ?? acctData.storage['0x']
+      delete acctData.storage['0x']
+    }
+
+    if (val !== hashedStorage[key]) {
+      assert.ok(
+        `Expected storage key 0x${bytesToHex(data.key)} at address ${address} to have value ${
+          hashedStorage[key] ?? '0x'
+        }, but got ${val}}`
       )
     }
-    if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
-      t.comment(
-        `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`
-      )
+    delete hashedStorage[key]
+  })
+
+  rs.on('end', function () {
+    for (const key in hashedStorage) {
+      if (hashedStorage[key] !== '0x00') {
+        assert.ok(`key: ${key} not found in storage at address ${address}`)
+      }
     }
 
-    // validate storage
-    const origRoot = state.root()
-
-    const hashedStorage: any = {}
-    for (const key in acctData.storage) {
-      hashedStorage[bytesToHex(keccak256(setLengthLeft(hexToBytes(key.slice(2)), 32)))] =
-        acctData.storage[key]
-    }
-
-    state.root(account.storageRoot)
-    const rs = state.createReadStream()
-    rs.on('data', function (data: any) {
-      let key = bytesToHex(data.key)
-      const val = bytesToHex(RLP.decode(data.value) as Uint8Array)
-
-      if (key === '0x') {
-        key = '0x00'
-        acctData.storage['0x00'] = acctData.storage['0x00'] ?? acctData.storage['0x']
-        delete acctData.storage['0x']
-      }
-
-      if (val !== hashedStorage[key]) {
-        t.comment(
-          `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
-            hashedStorage[key] ?? '0x'
-          }, but got ${val}}`
-        )
-      }
-      delete hashedStorage[key]
-    })
-
-    rs.on('end', function () {
-      for (const key in hashedStorage) {
-        if (hashedStorage[key] !== '0x00') {
-          t.comment(`key: ${key} not found in storage at address ${address}`)
-        }
-      }
-
-      state.root(origRoot)
-      resolve()
-    })
+    state.root(origRoot)
+    // resolve()
+    // })
   })
 }
 
@@ -252,7 +251,7 @@ export function verifyAccountPostConditions(
  * @param {Object} results  to verify
  * @param {Object} testData from tests repo
  */
-export function verifyGas(results: any, testData: any, t: tape.Test) {
+export function verifyGas(results: any, testData: any) {
   const coinbaseAddr = testData.env.currentCoinbase
   const preBal = testData.pre[coinbaseAddr] !== undefined ? testData.pre[coinbaseAddr].balance : 0
 
@@ -264,9 +263,9 @@ export function verifyGas(results: any, testData: any, t: tape.Test) {
   const balance = postBal - preBal
   if (balance !== BigInt(0)) {
     const amountSpent = results.gasUsed * testData.transaction.gasPrice
-    t.equal(amountSpent, balance, 'correct gas')
+    assert.equal(BigInt(amountSpent), balance, 'correct gas')
   } else {
-    t.equal(results, undefined)
+    assert.equal(results, undefined)
   }
 }
 

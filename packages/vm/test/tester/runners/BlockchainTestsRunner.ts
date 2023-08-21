@@ -1,119 +1,115 @@
 import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
-import {
-  MapDB,
-  bytesToBigInt,
-  bytesToHex,
-  hexToBytes,
-  initKZG,
-  isHexPrefixed,
-  stripHexPrefix,
-  toBytes,
-} from '@ethereumjs/util'
+import { bytesToBigInt, bytesToHex, hexToBytes, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
+import fs from 'fs'
+import { assert, expect, it, suite } from 'vitest'
 
-import { VM } from '../../../dist/cjs'
-import { setupPreConditions, verifyPostConditions } from '../../util'
+import { verifyPostConditions } from '../../util'
+import { DEFAULT_FORK_CONFIG, getRequiredForkConfigAlias, getTestDirs } from '../config'
+import { getTestsFromArgs, skipTest } from '../testLoader'
 
-import type { EthashConsensus } from '@ethereumjs/blockchain'
+import {
+  getBlockchainTests,
+  getGetterArgs,
+  getRunnerArgs,
+  getTestPath,
+  setupBlockchainTestVM,
+} from './runnerUtils'
+
+import type { VM } from '../../../src'
+import type {
+  BlockChainDirectory,
+  FileDirectory,
+  FileName,
+  TestDirectory,
+  TestFile,
+  TestSuite,
+} from '../testLoader'
+import type { RunnerArgs, TestArgs, TestGetterArgs } from './runnerUtils'
+import type { Blockchain } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
-import type * as tape from 'tape'
+import type { Trie } from '@ethereumjs/trie'
+import type { TaskResult, Test } from 'vitest'
 
 initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
 
-function formatBlockHeader(data: any) {
-  const formatted: any = {}
-  for (const [key, value] of Object.entries(data) as [string, string][]) {
-    formatted[key] = isHexPrefixed(value) ? value : BigInt(value)
-  }
-  return formatted
-}
+const name = 'BlockchainTests'
 
-export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
-  // ensure that the test data is the right fork data
-  if (testData.network !== options.forkConfigTestSuite) {
-    t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
-    return
-  }
-
-  // fix for BlockchainTests/GeneralStateTests/stRandom/*
-  testData.lastblockhash = stripHexPrefix(testData.lastblockhash)
-
-  let common = options.common.copy() as Common
-  common.setHardforkBy({ blockNumber: 0 })
-
-  let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true })
-  let stateManager = new DefaultStateManager({
-    trie: state,
-    common,
-  })
-
-  let validatePow = false
-  // Only run with block validation when sealEngine present in test file
-  // and being set to Ethash PoW validation
-  if (testData.sealEngine === 'Ethash') {
-    if (common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-      t.skip('SealEngine setting is not matching chain consensus type, skip test.')
+export class BlockchainTests {
+  testCount: number
+  FORK_CONFIG: string
+  FORK_CONFIG_TEST_SUITE: string
+  FORK_CONFIG_VM: string
+  /**
+   * Configuration for getting the tests from the ethereum/tests repository
+   */
+  testGetterArgs: TestGetterArgs
+  /**
+   * Run-time configuration
+   */
+  runnerArgs: RunnerArgs
+  runSkipped: string[]
+  expectedTests: number
+  failingTests: Record<string, (TaskResult | undefined)[]>
+  customStateTest: string | undefined
+  customTestsPath: string | undefined
+  constructor(argv: TestArgs) {
+    this.expectedTests = 0
+    this.failingTests = {}
+    this.testCount = 0
+    this.FORK_CONFIG = argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG
+    this.FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(this.FORK_CONFIG)
+    this.FORK_CONFIG_VM = this.FORK_CONFIG.charAt(0).toLowerCase() + this.FORK_CONFIG.substring(1)
+    this.customStateTest = argv.customStateTest
+    this.customTestsPath = argv.customTestsPath
+    this.testGetterArgs = getGetterArgs(argv, this.FORK_CONFIG_TEST_SUITE)
+    this.runSkipped = this.testGetterArgs.runSkipped ?? []
+    this.runnerArgs = getRunnerArgs(argv, this.FORK_CONFIG_VM, this.FORK_CONFIG_TEST_SUITE)
+    /**
+     * Modify the forkConfig string to ensure it works with RegEx (escape `+` characters)
+     */
+    if (this.testGetterArgs.forkConfig.includes('+')) {
+      let str = this.testGetterArgs.forkConfig
+      const indices = []
+      for (let i = 0; i < str.length; i++) {
+        if (str[i] === '+') {
+          indices.push(i)
+        }
+      }
+      // traverse array in reverse order to ensure indices match when we replace the '+' with '/+'
+      for (let i = indices.length - 1; i >= 0; i--) {
+        str = `${str.slice(0, indices[i])}\\${str.slice(indices[i])}`
+      }
+      this.testGetterArgs.forkConfig = str
     }
-    validatePow = true
+    this.expectedTests = getBlockchainTests(argv, this.FORK_CONFIG_VM) ?? 0
   }
-
-  // create and add genesis block
-  const header = formatBlockHeader(testData.genesisBlockHeader)
-  const withdrawals = common.isActivatedEIP(4895) ? [] : undefined
-  const blockData = { header, withdrawals }
-  const genesisBlock = Block.fromBlockData(blockData, { common })
-
-  if (typeof testData.genesisRLP === 'string') {
-    const rlp = toBytes(testData.genesisRLP)
-    t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
-  }
-
-  let blockchain = await Blockchain.create({
-    common,
-    validateBlocks: true,
-    validateConsensus: validatePow,
-    genesisBlock,
-  })
-
-  if (validatePow) {
-    ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB as any
-  }
-
-  const begin = Date.now()
-
-  let vm = await VM.create({
-    stateManager,
-    blockchain,
-    common,
-    setHardfork: true,
-  })
-
-  // set up pre-state
-  await setupPreConditions(vm.stateManager, testData)
-
-  t.deepEquals(
-    (vm.stateManager as any)._trie.root(),
-    genesisBlock.header.stateRoot,
-    'correct pre stateRoot'
-  )
-
-  async function handleError(error: string | undefined, expectException: string | boolean) {
-    if (expectException !== false) {
-      t.pass(`Expected exception ${expectException}`)
+  recordFailing(task: Test<{}>) {
+    if (this.failingTests[task.name] !== undefined) {
+      this.failingTests[task.name].push(task.result)
     } else {
-      t.fail(error)
+      this.failingTests[task.name] = [task.result]
     }
   }
-
-  let currentBlock = BigInt(0)
-  for (const raw of testData.blocks) {
+  async handleError(error: any, expectException: string | boolean) {
+    this.testCount++
+    if ((error.message as string).includes('RLP')) {
+      expect((expectException as string).includes('RLP')).toBeTruthy()
+    }
+    assert.ok(typeof expectException === 'string')
+  }
+  async runTestCase(
+    raw: Record<string, any>,
+    options: any,
+    testData: any,
+    currentBlock: bigint,
+    blockchain: Blockchain,
+    vm: VM,
+    common: Common,
+    state: Trie
+  ) {
     const paramFork = `expectException${options.forkConfigTestSuite}`
     // Two naming conventions in ethereum/tests to indicate "exception occurs on all HFs" semantics
     // Last checked: ethereumjs-testing v1.3.1 (2020-05-11)
@@ -128,29 +124,20 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
       const blockRlp = hexToBytes(raw.rlp as string)
-      const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
+      const decodedRLP: any = RLP.decode(blockRlp)
       currentBlock = bytesToBigInt(decodedRLP[0][8])
-    } catch (e: any) {
-      await handleError(e, expectException)
-      continue
-    }
-
-    try {
-      const blockRlp = hexToBytes(raw.rlp as string)
+      // this.testCount++
       // Update common HF
       let TD: bigint | undefined = undefined
       let timestamp: bigint | undefined = undefined
-      try {
-        const decoded: any = RLP.decode(blockRlp)
-        const parentHash = decoded[0][0]
-        TD = await blockchain.getTotalDifficulty(parentHash)
-        timestamp = bytesToBigInt(decoded[0][11])
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
+      const decoded: any = RLP.decode(blockRlp)
+      const parentHash = decoded[0][0]
+      TD = await blockchain.getTotalDifficulty(parentHash)
+      timestamp = bytesToBigInt(decoded[0][11])
 
       common.setHardforkBy({ blockNumber: currentBlock, td: TD, timestamp })
 
-      // transactionSequence is provided when txs are expected to be rejected.
+      // transactionSequence is provided when txs are expected to be rejected.>
       // To run this field we try to import them on the current state.
       if (raw.transactionSequence !== undefined) {
         const parentBlock = await vm.blockchain.getIteratorHead()
@@ -159,24 +146,19 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           blockOpts: { calcDifficultyFromHeader: parentBlock.header },
         })
 
-        for (const txData of raw.transactionSequence as Record<
+        for await (const txData of raw.transactionSequence as Record<
           'exception' | 'rawBytes' | 'valid',
           string
         >[]) {
           const shouldFail = txData.valid === 'false'
+          this.testCount++
           try {
             const txRLP = hexToBytes(txData.rawBytes)
             const tx = TransactionFactory.fromSerializedData(txRLP, { common })
             await blockBuilder.addTransaction(tx)
-            if (shouldFail) {
-              t.fail('tx should fail, but did not fail')
-            }
+            assert.notOk(shouldFail, 'tx did not fail')
           } catch (e: any) {
-            if (!shouldFail) {
-              t.fail(`tx should not fail, but failed: ${e.message}`)
-            } else {
-              t.pass('tx successfully failed')
-            }
+            assert.ok(shouldFail, 'tx failed')
           }
         }
         await blockBuilder.revert() // will only revert if checkpointed
@@ -190,8 +172,9 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
       //
-      //vm.common.genesis().stateRoot = vm.stateManager._trie.root()
+      //vm._common.genesis().stateRoot = vm.stateManager._trie.root()
       try {
+        this.testCount++
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
           const parentState = parentBlock.header.stateRoot
@@ -216,35 +199,233 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const headBlock = await vm.blockchain.getIteratorHead()
           ;(vm.stateManager as any)._trie.root(headBlock.header.stateRoot)
         } else {
-          await verifyPostConditions(state, testData.postState, t)
+          await verifyPostConditions(state, testData.postState)
         }
-
         throw e
       }
+      // })
 
-      //  await cacheDB._leveldb.close()
-
-      if (expectException !== false) {
-        t.fail(`expected exception but test did not throw an exception: ${expectException}`)
-        return
-      }
+      expect(
+        expectException,
+        `expected exception but test did not throw an exception: ${expectException}`
+      ).toBeFalsy()
     } catch (error: any) {
       // caught an error, reduce block number
       currentBlock--
-      await handleError(error, expectException)
+      return this.handleError(error, expectException)
     }
   }
-  t.equal(
-    bytesToHex((blockchain as any)._headHeaderHash),
-    '0x' + testData.lastblockhash,
-    'correct last header block'
-  )
+  async runBlockchainTest(options: any, testData: Record<string, any>, _id: string) {
+    it(_id, async () => {
+      const common = options.common.copy()
+      const { vm, blockchain, state } = await setupBlockchainTestVM(common, testData)
+      const currentBlock = BigInt(0)
+      const testBlocks = testData.blocks
+      if (testData.network !== options.forkConfigTestSuite) {
+        it.skip(
+          `skipping test: no data available for ${options.forkConfigTestSuite} (testData.network = ${testData.network})`
+        )
+        return
+      }
+      if (testBlocks.length > 0) {
+        for await (const raw of testBlocks) {
+          this.testCount++
+          try {
+            await this.runTestCase(
+              raw,
+              options,
+              testData,
+              currentBlock,
+              blockchain,
+              vm,
+              common,
+              state
+            )
+          } catch (err: any) {
+            return
+          }
+        }
+        this.testCount++
+        assert.equal(
+          bytesToHex((blockchain as any)._headHeaderHash),
+          testData.lastblockhash,
+          `_headHeaderHash: ${bytesToHex(
+            (blockchain as any)._headHeaderHash
+          )} !== testData.lastblockhash ${testData.lastblockhash}`
+        )
+      }
+    })
+  }
 
-  const end = Date.now()
-  const timeSpent = `${(end - begin) / 1000} secs`
-  t.comment(`Time: ${timeSpent}`)
-  // await cacheDB._leveldb.close()
+  skipFn = (name: string, test: Record<string, any>) => {
+    const forkFilter = new RegExp(`${this.testGetterArgs.forkConfig}$`)
+    return forkFilter.test(test.network) === false || skipTest(name, this.testGetterArgs.skipTests)
+  }
 
-  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
-  common = blockchain = state = stateManager = vm = cacheDB = null // eslint-disable-line
+  async runTestSuite(testSuite: TestSuite) {
+    if (testSuite === undefined || Object.entries(testSuite).length === 0) {
+      it.skip('0 tests')
+      return
+    }
+    for (const [testName, test] of Object.entries(testSuite)) {
+      await this.runFileDirectory(testName, test)
+      delete testSuite[testName]
+    }
+  }
+  async runFileDirectory(dir: string, files: FileDirectory) {
+    if (Object.entries(files).length === 0) {
+      it.skip('0 Tests')
+      return
+    }
+    suite(dir, async () => {
+      for (const [fileName, tests] of Object.entries(files)) {
+        if (fileName.endsWith('.json')) {
+          await this.runTestFile(fileName, tests)
+          delete files[fileName]
+        }
+      }
+    })
+  }
+
+  async runTestFile(file: string, testFile: TestFile) {
+    suite(file, async () => {
+      for (const [testName, test] of Object.entries(testFile)) {
+        await this.runBlockchainTest(this.runnerArgs, test, testName)
+        delete testFile[testName]
+      }
+    })
+  }
+
+  async runTests(): Promise<void> {
+    if (this.customStateTest !== undefined) {
+      return
+    } else if (this.testGetterArgs.dir !== undefined) {
+      const testsPath = getTestPath('BlockchainTests', this.testGetterArgs, this.customTestsPath)
+
+      const files = fs
+        .readdirSync(testsPath, {
+          encoding: 'utf8',
+        })
+        .filter((file: FileName) => !file.endsWith('.stub'))
+
+        .map((file: FileName) => {
+          const testFile = fs.readFileSync(testsPath + '/' + file, {
+            encoding: 'utf8',
+          })
+          const testCases: TestFile = JSON.parse(testFile)
+          for (const testName of Object.keys(testCases)) {
+            if (
+              skipTest(testName, this.testGetterArgs.skipTests) ||
+              (testCases[testName].network !== undefined &&
+                testCases[testName].network !== this.FORK_CONFIG_TEST_SUITE) ||
+              (testCases[testName].post !== undefined &&
+                !Object.keys(testCases[testName].post!).includes(this.FORK_CONFIG_TEST_SUITE))
+            ) {
+              delete testCases[testName]
+            }
+          }
+          return [file, testCases] as [FileName, TestFile]
+        })
+        .filter(([, v]) => Object.keys(v).length > 0)
+      const subDirs = this.testGetterArgs.dir!.split('/')
+      suite('BlockChainTests', async () => {
+        if (subDirs.length === 2) {
+          await this.runFileDirectory(subDirs[1], Object.fromEntries(files) as FileDirectory)
+        } else if (subDirs.length === 3) {
+          suite(subDirs[0], async () => {
+            suite(subDirs[1], async () => {
+              await this.runFileDirectory(subDirs[2], Object.fromEntries(files) as FileDirectory)
+            })
+          })
+        }
+      })
+    } else {
+      const dirs = getTestDirs(this.FORK_CONFIG_VM, name)
+      const _tests: TestDirectory<'BlockchainTests'> = {}
+      if (dirs.includes('BlockchainTests')) {
+        _tests.BlockChainTests = (await getTestsFromArgs(
+          'BlockchainTests',
+          this.testGetterArgs,
+          getTestPath('BlockchainTests', this.testGetterArgs, this.customTestsPath)
+        )) as BlockChainDirectory
+      }
+      if (dirs.includes('LegacyTests/Constantinople/BlockchainTests')) {
+        _tests.LegacyTests = {
+          Constantinople: {
+            BlockChainTests: (await getTestsFromArgs(
+              'BlockchainTests',
+              this.testGetterArgs,
+              getTestPath(
+                'LegacyTests/Constantinople/BlockchainTests',
+                this.testGetterArgs,
+                this.customTestsPath
+              )
+            )) as BlockChainDirectory,
+          },
+        }
+      }
+      suite('BlockChainTests', async () => {
+        suite('BlockChainTests', async () => {
+          suite('GeneralStateTests', async () => {
+            suite('Shanghai', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.GeneralStateTests.Shanghai!)
+            })
+            suite('VMTests', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.GeneralStateTests.VMTests!)
+            })
+            const rest = Object.entries(_tests.BlockChainTests!.GeneralStateTests).filter(
+              ([dir]) => dir !== 'Shanghai' && dir !== 'VMTests'
+            )
+            rest.length > 0 &&
+              suite('/', async () => {
+                for (const [dir, tests] of rest) {
+                  await this.runFileDirectory(dir, tests as FileDirectory)
+                }
+              })
+          })
+
+          _tests.BlockChainTests!.InvalidBlocks !== undefined &&
+            suite('InvalidBlocks', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.InvalidBlocks!)
+            })
+          _tests.BlockChainTests!.ValidBlocks !== undefined &&
+            suite('ValidBlocks', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.ValidBlocks!)
+            })
+          if (_tests.BlockChainTests?.TransitionTests !== undefined) {
+            suite('TransitionTests', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.TransitionTests!)
+            })
+          }
+        })
+        if (_tests.LegacyTests) {
+          suite('Legacy BlockChainTests', async () => {
+            suite('GeneralStateTests', async () => {
+              await this.runTestSuite(
+                _tests.LegacyTests!.Constantinople.BlockChainTests.GeneralStateTests
+              )
+            })
+            suite('InvalidBlocks', async () => {
+              await this.runTestSuite(
+                _tests.LegacyTests!.Constantinople.BlockChainTests.InvalidBlocks
+              )
+            })
+            suite('ValidBlocks', async () => {
+              await this.runTestSuite(
+                _tests.LegacyTests!.Constantinople.BlockChainTests.ValidBlocks
+              )
+            })
+          })
+        }
+      })
+
+      if (this.expectedTests > 0) {
+        suite('final', async () => {
+          it(`Checks test count > ${this.expectedTests}`, async () => {
+            expect(this.testCount).toBeGreaterThan(this.expectedTests)
+          })
+        })
+      }
+    }
+  }
 }

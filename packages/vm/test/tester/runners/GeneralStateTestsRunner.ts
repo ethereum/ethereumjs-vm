@@ -1,109 +1,323 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
-import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
+import { toBytes } from '@ethereumjs/util'
+import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import { assert, expect, it, suite } from 'vitest'
 
-import { VM } from '../../../dist/cjs'
-import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util'
+import { makeBlockFromEnv } from '../../util'
+import { DEFAULT_FORK_CONFIG, getRequiredForkConfigAlias, getTestDirs } from '../config'
+import { getTestFromSource, getTestsFromArgs } from '../testLoader'
 
+import {
+  getGetterArgs,
+  getRunnerArgs,
+  getStateTests,
+  getTestPath,
+  parseTestCases,
+  setupStateTestVM,
+  shouldSkip,
+} from './runnerUtils'
+
+import type { VM } from '../../../src'
+import type {
+  FileDirectory,
+  StateDirectory,
+  TestDirectory,
+  TestFile,
+  TestSuite,
+} from '../testLoader'
+import type { RunnerArgs, TestArgs, TestGetterArgs } from './runnerUtils'
 import type { InterpreterStep } from '@ethereumjs/evm'
-import type * as tape from 'tape'
+import type { TaskResult, Test } from 'vitest'
 
-function parseTestCases(
-  forkConfigTestSuite: string,
-  testData: any,
-  data: string | undefined,
-  gasLimit: string | undefined,
-  value: string | undefined
-) {
-  let testCases = []
+type TestData = Record<string, any>
+type TestInput = Record<string, any>
 
-  if (testData['post'][forkConfigTestSuite] !== undefined) {
-    testCases = testData['post'][forkConfigTestSuite].map((testCase: any) => {
-      const testIndexes = testCase['indexes']
-      const tx = { ...testData.transaction }
-      if (data !== undefined && testIndexes['data'] !== data) {
-        return null
-      }
-
-      if (value !== undefined && testIndexes['value'] !== value) {
-        return null
-      }
-
-      if (gasLimit !== undefined && testIndexes['gas'] !== gasLimit) {
-        return null
-      }
-
-      tx.data = testData.transaction.data[testIndexes['data']]
-      tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
-      tx.value = testData.transaction.value[testIndexes['value']]
-
-      if (tx.accessLists !== undefined) {
-        tx.accessList = testData.transaction.accessLists[testIndexes['data']]
-        if (tx.chainId === undefined) {
-          tx.chainId = 1
+const name = 'GeneralStateTests'
+export class GeneralStateTests {
+  testCount: number
+  FORK_CONFIG: string
+  FORK_CONFIG_TEST_SUITE: string
+  FORK_CONFIG_VM: string
+  /**
+   * Configuration for getting the tests from the ethereum/tests repository
+   */
+  testGetterArgs: TestGetterArgs
+  /**
+   * Run-time configuration
+   */
+  runnerArgs: RunnerArgs
+  runSkipped: string[]
+  expectedTests: number
+  failingTests: Record<string, (TaskResult | undefined)[]>
+  customStateTest: string | undefined
+  customTestsPath: string | undefined
+  logResults: boolean
+  constructor(argv: TestArgs) {
+    this.expectedTests = 0
+    this.failingTests = {}
+    this.testCount = 0
+    this.FORK_CONFIG = argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG
+    this.FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(this.FORK_CONFIG)
+    this.FORK_CONFIG_VM = this.FORK_CONFIG.charAt(0).toLowerCase() + this.FORK_CONFIG.substring(1)
+    this.customStateTest = argv.customStateTest
+    this.customTestsPath = argv.customTestsPath
+    this.testGetterArgs = getGetterArgs(argv, this.FORK_CONFIG_TEST_SUITE)
+    this.runSkipped = this.testGetterArgs.runSkipped ?? []
+    this.runnerArgs = getRunnerArgs(argv, this.FORK_CONFIG_VM, this.FORK_CONFIG_TEST_SUITE)
+    this.logResults = argv.debug ?? false
+    /**
+     * Modify the forkConfig string to ensure it works with RegEx (escape `+` characters)
+     */
+    if (this.testGetterArgs.forkConfig.includes('+')) {
+      let str = this.testGetterArgs.forkConfig
+      const indices = []
+      for (let i = 0; i < str.length; i++) {
+        if (str[i] === '+') {
+          indices.push(i)
         }
       }
+      // traverse array in reverse order to ensure indices match when we replace the '+' with '/+'
+      for (let i = indices.length - 1; i >= 0; i--) {
+        str = `${str.slice(0, indices[i])}\\${str.slice(indices[i])}`
+      }
+      this.testGetterArgs.forkConfig = str
+    }
+    this.expectedTests =
+      getStateTests(
+        this.FORK_CONFIG_VM,
+        argv['verify-test-amount-alltests'],
+        argv['expected-test-amount']
+      ) ?? 0
+  }
+  recordFailing(task: Test<{}>) {
+    if (this.failingTests[task.name] !== undefined) {
+      this.failingTests[task.name].push(task.result)
+    } else {
+      this.failingTests[task.name] = [task.result]
+    }
+  }
+  async onFile(
+    this: GeneralStateTests,
+    fileName: string,
+    subDir: string,
+    testName: string,
+    test: TestInput
+  ): Promise<void> {
+    if (!shouldSkip(this.runSkipped, fileName)) {
+      const testIdentifier = `${subDir}/${fileName}: ${testName}`
+      assert.ok(testIdentifier)
+      await this.runStateTest(this.runnerArgs, test, testIdentifier)
+    }
+  }
+  async runTestCase(options: RunnerArgs, testData: TestData) {
+    const begin = Date.now()
+    // Copy the common object to not create long-lasting
+    // references in memory which might prevent GC
+    const common = options.common.copy()
+    let execInfo: string
+    const testCaseSetup = await setupStateTestVM(common, testData)
+    const vm = testCaseSetup.vm
+    const tx = testCaseSetup.tx
+    execInfo = testCaseSetup.execInfo
+    const afterTxHandler = async () => {
+      const stateRoot = {
+        stateRoot: bytesToHex((vm.stateManager as any)._trie.root),
+      }
+      assert.ok(JSON.stringify(stateRoot), `stateRoot: ${stateRoot}`)
+    }
 
-      return {
-        transaction: tx,
-        postStateRoot: testCase['hash'],
-        logs: testCase['logs'],
-        env: testData['env'],
-        pre: testData['pre'],
-        expectException: testCase['expectException'],
+    if (tx !== undefined) {
+      if (tx.isValid() === true) {
+        const block = makeBlockFromEnv(testData.env, { common })
+        if (options.jsontrace === true) {
+          vm.evm.events!.on('step', this.stepHandler)
+          vm.events.on('afterTx', afterTxHandler)
+        }
+        try {
+          await vm.runTx({ tx, block })
+          execInfo = 'successful tx run'
+        } catch (e: any) {
+          execInfo = `tx runtime error :${e.message}`
+        }
+      } else {
+        execInfo = 'tx validation failed'
+      }
+    }
+
+    // Cleanup touched accounts (this wipes coinbase if it is empty on HFs >= TangerineWhistle)
+    await (<VM>vm).evm.journal.cleanup()
+    await (<VM>vm).stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
+
+    const stateManagerStateRoot = (<any>vm.stateManager)._trie.root()
+    const testDataPostStateRoot = toBytes(testData.postStateRoot)
+    const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
+
+    vm.evm.events!.removeListener('step', this.stepHandler)
+    vm.events.removeListener('afterTx', afterTxHandler)
+
+    // @ts-ignore Explicitly delete objects for memory optimization (early GC)
+    // TODO FIXME
+    //common = blockchain = state = stateManager = evm = vm = null // eslint-disable-line
+    const end = Date.now()
+    const timeSpent = `${(end - begin) / 1000} secs`
+    assert.isTrue((end - begin) / 1000 > 0)
+    assert.ok(stateRootsAreEqual, `the state roots should match (${execInfo})`)
+    return parseFloat(timeSpent)
+  }
+  async runStateTest(options: RunnerArgs, testData: TestData, id: string) {
+    try {
+      const testCases = parseTestCases(
+        options.forkConfigTestSuite,
+        testData,
+        options.data,
+        options.gasLimit,
+        options.value
+      )
+      if (testCases.length === 0) {
+        it.skip(`No ${options.forkConfigTestSuite} post state defined, skip test`)
+        return
+      }
+      for await (const [idx, testCase] of testCases.entries()) {
+        this.testCount++
+        const testRun = `${id} ${idx + 1}/${testCases.length}`
+        if (options.reps !== undefined && options.reps > 0) {
+          let totalTimeSpent = 0
+          for (const rep of Array.from({ length: options.reps }, (_, i) => i)) {
+            it(`${testRun}: rep ${rep + 1} / ${options.reps}`, async () => {
+              totalTimeSpent += await this.runTestCase(options, testCase)
+            })
+          }
+          console.log(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()}`)
+        } else {
+          it(`${testRun}`, async () => {
+            await this.runTestCase(options, testCase)
+          })
+        }
+      }
+    } catch (e: any) {
+      it.fails(`error running test case for fork: ${options.forkConfigTestSuite}: ${e.message}`)
+    }
+  }
+
+  async runTestSuite(testSuite: TestSuite) {
+    for (const [testName, test] of Object.entries(testSuite)) {
+      await this.runFileDirectory(testName, test)
+      delete testSuite[testName]
+    }
+  }
+  async runFileDirectory(dir: string, files: FileDirectory) {
+    suite(dir, async () => {
+      for (const [fileName, tests] of Object.entries(files)) {
+        if (fileName.endsWith('.json')) {
+          await this.runTestFile(fileName, tests)
+          delete files[fileName]
+        }
       }
     })
   }
 
-  testCases = testCases.filter((testCase: any) => {
-    return testCase !== null
-  })
-
-  return testCases
-}
-
-async function runTestCase(options: any, testData: any, t: tape.Test) {
-  const begin = Date.now()
-  // Copy the common object to not create long-lasting
-  // references in memory which might prevent GC
-  const common = options.common.copy()
-
-  // Have to create a blockchain with empty block as genesisBlock for Merge
-  // Otherwise mainnet genesis will throw since this has difficulty nonzero
-  const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
-  const blockchain = await Blockchain.create({ genesisBlock, common })
-  const state = new Trie({ useKeyHashing: true })
-  const stateManager = new DefaultStateManager({
-    trie: state,
-    common,
-  })
-
-  const vm = await VM.create({ stateManager, common, blockchain })
-
-  await setupPreConditions(vm.stateManager, testData)
-
-  let execInfo = ''
-  let tx
-
-  try {
-    tx = makeTx(testData.transaction, { common })
-  } catch (e: any) {
-    execInfo = 'tx instantiation exception'
+  async runTestFile(file: string, testFile: TestFile) {
+    suite(file, async () => {
+      for (const [testName, test] of Object.entries(testFile)) {
+        it(testName, async () => {
+          await this.runStateTest(this.runnerArgs, test, testName)
+          delete testFile[testName]
+        })
+      }
+    })
   }
 
-  // Even if no txs are ran, coinbase should always be created
-  const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
-  const account = await (<VM>vm).stateManager.getAccount(coinbaseAddress)
-  await (<VM>vm).evm.journal.putAccount(coinbaseAddress, account ?? new Account())
-
-  const stepHandler = (e: InterpreterStep) => {
+  async runTests(): Promise<void> {
+    if (this.customStateTest !== undefined) {
+      const fileName = this.customStateTest
+      it(`customStateTest:${fileName}`, async () => {
+        getTestFromSource(fileName, this.onCustomStateTest(fileName, this.runnerArgs))
+      })
+    } else {
+      const dirs = getTestDirs(this.FORK_CONFIG_VM, name)
+      const _tests: TestDirectory<'GeneralStateTests'> = {}
+      if (dirs.includes('GeneralStateTests')) {
+        _tests.GeneralStateTests = (await getTestsFromArgs(
+          'GeneralStateTests',
+          this.testGetterArgs,
+          getTestPath('GeneralStateTests', this.testGetterArgs, this.customTestsPath)
+        )) as StateDirectory
+      }
+      if (dirs.includes('LegacyTests/Constantinople/GeneralStateTests')) {
+        _tests.LegacyTests = {
+          Constantinople: {
+            GeneralStateTests: (await getTestsFromArgs(
+              'GeneralStateTests',
+              this.testGetterArgs,
+              getTestPath(
+                'LegacyTests/Constantinople/GeneralStateTests',
+                this.testGetterArgs,
+                this.customTestsPath
+              )
+            )) as StateDirectory,
+          },
+        }
+      }
+      suite('GeneralStateTests', async () => {
+        if (_tests.GeneralStateTests) {
+          suite('GeneralStateTests', async () => {
+            const rest = Object.entries(_tests.GeneralStateTests!).filter(
+              ([dir]) => dir !== 'Shanghai' && dir !== 'VMTests'
+            )
+            suite('/', async () => {
+              for (const [dir, tests] of rest) {
+                await this.runFileDirectory(dir, tests as FileDirectory)
+              }
+            })
+            if (_tests.GeneralStateTests!.Shanghai) {
+              suite('Shanghai', async () => {
+                await this.runTestSuite(_tests.GeneralStateTests!.Shanghai!)
+              })
+            }
+            if (_tests.GeneralStateTests!.VMTests) {
+              suite('VMTests', async () => {
+                await this.runTestSuite(_tests.GeneralStateTests!.VMTests!)
+              })
+            }
+          })
+        }
+        if (_tests.LegacyTests) {
+          suite('Legacy State Tests', async () => {
+            const rest = Object.entries(
+              _tests.LegacyTests!.Constantinople.GeneralStateTests
+            ).filter(([dir]) => dir !== 'Shanghai' && dir !== 'VMTests')
+            suite('/', async () => {
+              for (const [dir, tests] of rest) {
+                await this.runFileDirectory(dir, tests as FileDirectory)
+              }
+            })
+          })
+        }
+      })
+      if (this.expectedTests > 0) {
+        suite('final', async () => {
+          it('checks test count', async () => {
+            expect(this.testCount).toBeGreaterThan(this.expectedTests)
+          })
+        })
+      }
+    }
+  }
+  onCustomStateTest = (fileName: string, runnerArgs: RunnerArgs) => {
+    return async (err: string | null, test: any) => {
+      if (err !== null) {
+        return assert.equal(err, 'err')
+      } else {
+        const id = `${fileName}: ${test.testName}`
+        assert.ok(id)
+        await this.runStateTest(runnerArgs, test, id)
+      }
+    }
+  }
+  stepHandler(e: InterpreterStep) {
     let hexStack = []
     hexStack = e.stack.map((item: bigint) => {
       return '0x' + item.toString(16)
     })
-
     const opTrace = {
       pc: e.pc,
       op: e.opcode.name,
@@ -113,85 +327,6 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       depth: e.depth,
       opName: e.opcode.name,
     }
-
-    t.comment(JSON.stringify(opTrace))
-  }
-
-  const afterTxHandler = async () => {
-    const stateRoot = {
-      stateRoot: bytesToHex((vm.stateManager as any)._trie.root),
-    }
-    t.comment(JSON.stringify(stateRoot))
-  }
-
-  if (tx) {
-    if (tx.isValid()) {
-      const block = makeBlockFromEnv(testData.env, { common })
-
-      if (options.jsontrace === true) {
-        vm.evm.events!.on('step', stepHandler)
-        vm.events.on('afterTx', afterTxHandler)
-      }
-      try {
-        await vm.runTx({ tx, block })
-        execInfo = 'successful tx run'
-      } catch (e: any) {
-        execInfo = `tx runtime error :${e.message}`
-      }
-    } else {
-      execInfo = 'tx validation failed'
-    }
-  }
-
-  // Cleanup touched accounts (this wipes coinbase if it is empty on HFs >= TangerineWhistle)
-  await (<VM>vm).evm.journal.cleanup()
-  await (<VM>vm).stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
-
-  const stateManagerStateRoot = (vm.stateManager as any)._trie.root()
-  const testDataPostStateRoot = toBytes(testData.postStateRoot)
-  const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
-
-  const end = Date.now()
-  const timeSpent = `${(end - begin) / 1000} secs`
-
-  t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
-
-  vm.evm.events!.removeListener('step', stepHandler)
-  vm.events.removeListener('afterTx', afterTxHandler)
-
-  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
-  // TODO FIXME
-  //common = blockchain = state = stateManager = evm = vm = null // eslint-disable-line
-
-  return parseFloat(timeSpent)
-}
-
-export async function runStateTest(options: any, testData: any, t: tape.Test) {
-  try {
-    const testCases = parseTestCases(
-      options.forkConfigTestSuite,
-      testData,
-      options.data,
-      options.gasLimit,
-      options.value
-    )
-    if (testCases.length === 0) {
-      t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
-      return
-    }
-    for (const testCase of testCases) {
-      if (options.reps !== undefined && options.reps > 0) {
-        let totalTimeSpent = 0
-        for (let x = 0; x < options.reps; x++) {
-          totalTimeSpent += await runTestCase(options, testCase, t)
-        }
-        t.comment(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
-      } else {
-        await runTestCase(options, testCase, t)
-      }
-    }
-  } catch (e: any) {
-    console.log(e)
-    t.fail(`error running test case for fork: ${options.forkConfigTestSuite}`)
+    assert.ok(JSON.stringify(opTrace))
   }
 }

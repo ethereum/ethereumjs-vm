@@ -6,6 +6,6 @@
 # ./test/tester/scripts/blockchain-test-run-test.sh
 ##################################################################
 
-ts-node ./test/tester --blockchain --file='randomStatetest303'
+FILE=randomStatetest303 npx vitest run ./test/tester/blockchain/index.spec.ts
 # Test that uses the expectException properties in BlockchainTests test files
-ts-node ./test/tester --blockchain --file='GasUsedHigherThanBlockGasLimitButNotWithRefundsSuicideLast'
+FILE=GasUsedHigherThanBlockGasLimitButNotWithRefundsSuicideLast npx vitest run ./test/tester/blockchain/index.spec.ts

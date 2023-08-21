@@ -114,7 +114,7 @@ export class VM {
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this.common })
 
     // TODO tests
-    if (opts.evm) {
+    if (opts.evm !== undefined) {
       this.evm = opts.evm
     } else {
       this.evm = new EVM({

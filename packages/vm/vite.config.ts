@@ -4,4 +4,8 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [wasm(), topLevelAwait()],
+  test: {
+    isolate: false,
+    logHeapUsage: true,
+  },
 })
