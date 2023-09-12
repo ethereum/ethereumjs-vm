@@ -221,14 +221,22 @@ for (const cacheSize of [0, 100]) {
     */
 
       let path = await trie.findPath(utf8ToBytes('aaa'))
+      let path2 = await trie.findPath2(utf8ToBytes('aaa'))
+      assert.deepEqual(path, path2, 'findPath and findPath2 should return the same result')
 
       assert.ok(path.node !== null, 'findPath should find a node')
 
       const { stack } = await trie.findPath(utf8ToBytes('aaa'))
+      const { stack: stack2 } = await trie.findPath2(utf8ToBytes('aaa'))
+
+      assert.deepEqual(stack, stack2, 'findPath and findPath2 should return the same result')
+
       // @ts-expect-error
       await trie._db.del(keccak256(stack[1].serialize())) // delete the BranchNode -> value1 from the DB
 
       path = await trie.findPath(utf8ToBytes('aaa'))
+      path2 = await trie.findPath2(utf8ToBytes('aaa'))
+      assert.deepEqual(path, path2, 'findPath and findPath2 should return the same result')
 
       assert.ok(path.node === null, 'findPath should not return a node now')
       assert.ok(

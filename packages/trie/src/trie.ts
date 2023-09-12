@@ -167,7 +167,7 @@ export class Trie {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
-    const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
+    const { node, remaining } = await this.findPath2(this.appliedKey(key), throwIfMissing)
     let value: Uint8Array | null = null
     if (node && remaining.length === 0) {
       value = node.value()
@@ -199,7 +199,7 @@ export class Trie {
       await this._createInitialNode(appliedKey, value)
     } else {
       // First try to find the given key or its nearest node
-      const { remaining, stack } = await this.findPath(appliedKey)
+      const { remaining, stack } = await this.findPath2(appliedKey)
       let ops: BatchDBOp[] = []
       if (this._opts.useNodePruning) {
         const val = await this.get(key)
@@ -242,7 +242,7 @@ export class Trie {
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-    const { node, stack } = await this.findPath(appliedKey)
+    const { node, stack } = await this.findPath2(appliedKey)
 
     let ops: BatchDBOp[] = []
     // Only delete if the `key` currently has any value
@@ -335,6 +335,93 @@ export class Trie {
     }
 
     return result
+  }
+
+  async processPathNode(
+    nodeKey: Uint8Array | Uint8Array[],
+    stack: TrieNode[],
+    progress: Nibbles,
+    remaining: Nibbles
+  ): Promise<Path> {
+    let node: TrieNode | null
+    try {
+      node = await this.lookupNode(nodeKey)
+    } catch {
+      throw new Error('Missing node in DB')
+    }
+    stack.push(node)
+    if (node instanceof LeafNode) {
+      const matching = doKeysMatch(remaining, node.key())
+      if (matching) {
+        return { node, remaining: [], stack }
+      }
+      return { node: null, remaining, stack }
+    }
+    const nibbleLen = 'key' in node ? node.key().length : 1
+    const current = remaining.slice(0, nibbleLen)
+    progress.push(...current)
+    if (node instanceof BranchNode) {
+      if (remaining.length === 0) {
+        return { node, remaining, stack }
+      } else {
+        const encodedBranch = node.getBranch(current[0])
+        if (encodedBranch === null) {
+          return { node: null, remaining, stack }
+        }
+        try {
+          await this.lookupNode(encodedBranch)
+        } catch {
+          throw new Error('Missing node in DB')
+        }
+        remaining = remaining.slice(1)
+        return this.processPathNode(encodedBranch!, stack, progress, remaining)
+      }
+    } else if (node instanceof ExtensionNode) {
+      if (!doKeysMatch(current, node.key())) {
+        return { node: null, remaining, stack }
+      }
+      const childRef = node.value()
+      try {
+        await this.lookupNode(childRef)
+      } catch {
+        return { node: null, remaining: [], stack }
+      }
+      remaining = remaining.slice(nibbleLen)
+      return this.processPathNode(childRef, stack, progress, remaining)
+    } else {
+      throw new Error('Unknown node type')
+    }
+  }
+
+  /**
+   * Tries to find a path to the node for the given key.
+   * It returns a `stack` of nodes to the closest node.
+   * @param key - the search key
+   * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
+   */
+  async findPath2(key: Uint8Array, throwIfMissing: boolean = false): Promise<Path> {
+    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
+      if (throwIfMissing) {
+        throw new Error('Missing node in DB')
+      }
+      return { node: null, stack: [], remaining: [] }
+    }
+
+    let path: Path = {
+      node: null,
+      remaining: bytesToNibbles(key),
+      stack: [],
+    }
+    try {
+      path = await this.processPathNode(this.root(), path.stack, [], path.remaining)
+    } catch (error: any) {
+      if (error.message === 'Missing node in DB' && !throwIfMissing) {
+        // pass
+      } else {
+        throw error
+      }
+    }
+    return path
   }
 
   /**
@@ -784,7 +871,7 @@ export class Trie {
    * @param key
    */
   async createProof(key: Uint8Array): Promise<Proof> {
-    const { stack } = await this.findPath(this.appliedKey(key))
+    const { stack } = await this.findPath2(this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })

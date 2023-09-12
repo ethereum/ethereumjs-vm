@@ -64,9 +64,9 @@ export class WalkController {
   /**
    * Run all children of a node. Priority of these nodes are the key length of the children.
    * @param node - Node to get all children of and call onNode on.
-   * @param key - The current `key` which would yield the `node` when trying to get this node with a `get` operation.
+   * @param progress - The current `key` which would yield the `node` when trying to get this node with a `get` operation.
    */
-  allChildren(node: TrieNode, key: Nibbles = []) {
+  allChildren(node: TrieNode, progress: Nibbles = []) {
     if (node instanceof LeafNode) {
       return
     }
@@ -82,7 +82,7 @@ export class WalkController {
     for (const child of children) {
       const keyExtension = child[0] as Nibbles
       const childRef = child[1] as Uint8Array
-      const childKey = key.concat(keyExtension)
+      const childKey = progress.concat(keyExtension)
       const priority = childKey.length
       this.pushNodeToQueue(childRef, childKey, priority)
     }
@@ -117,7 +117,7 @@ export class WalkController {
    * @param childIndex - The child index to add to the event queue.
    * @param priority - Optional priority of the event, defaults to the total key length.
    */
-  onlyBranchIndex(node: BranchNode, key: Nibbles = [], childIndex: number, priority?: number) {
+  onlyBranchIndex(node: BranchNode, progress: Nibbles = [], childIndex: number, priority?: number) {
     if (!(node instanceof BranchNode)) {
       throw new Error('Expected branch node')
     }
@@ -125,7 +125,7 @@ export class WalkController {
     if (!childRef) {
       throw new Error('Could not get branch of childIndex')
     }
-    const childKey = key.slice() // This copies the key to a new array.
+    const childKey = progress.slice() // This copies the key to a new array.
     childKey.push(childIndex)
     const prio = priority ?? childKey.length
     this.pushNodeToQueue(childRef as Uint8Array, childKey, prio)
