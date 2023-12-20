@@ -1,3 +1,5 @@
+import { type HistoryNetwork, NetworkId, PortalNetwork } from 'portalnetwork'
+
 import { version as packageVersion } from '../package.json'
 
 import { Chain } from './blockchain'
@@ -70,7 +72,7 @@ export class EthereumClient {
   public config: Config
   public chain: Chain
   public services: (FullEthereumService | LightEthereumService)[] = []
-
+  public history: HistoryNetwork | undefined
   public opened: boolean
   public started: boolean
 
@@ -123,6 +125,11 @@ export class EthereumClient {
   async open() {
     if (this.opened) {
       return false
+    }
+    if (this.config.chainCommon.isActivatedEIP(4444)) {
+      // Instantiate portal network if EIP-4444 is activated
+      const portal = await PortalNetwork.create({ supportedNetworks: [NetworkId.HistoryNetwork] })
+      this.history = portal.network()['0x500b']
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()

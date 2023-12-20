@@ -51,9 +51,9 @@
     "vitest": "0.32.2"
   },
   "peerDependencies": {
+    "@vitest/browser": "0.32.2",
     "playwright": "^1.35.1",
-    "webdriverio": "^8.10.7",
-    "@vitest/browser": "0.32.2"
+    "webdriverio": "^8.10.7"
   },
   "peerDependenciesMeta": {
     "playwright": {

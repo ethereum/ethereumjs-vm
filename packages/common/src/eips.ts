@@ -364,6 +364,20 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  4444: {
+    comment: 'Bound Historical Data in Execution Clients',
+    url: 'https://eips.ethereum.org/EIPS/eip-4444',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Shanghai,
+    requiredEIPs: [],
+    gasPrices: {},
+    history: {
+      historyPruneEpochs: {
+        v: 82125,
+        d: 'A year in beacon chain epochs',
+      },
+    },
+  },
   4788: {
     comment: 'Beacon block root in the EVM',
     url: 'https://eips.ethereum.org/EIPS/eip-4788',

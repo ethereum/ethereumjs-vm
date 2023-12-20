@@ -402,6 +402,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'Skip executing blocks in new payload calls in engine, alias for --engineNewpayloadMaxExecute=0 and overrides any engineNewpayloadMaxExecute if also provided',
     boolean: true,
   })
+  .option('fourFours', {
+    describe: 'Activate EIP-4444 to prune ancient chain history',
+    boolean: true,
+    default: false,
+  })
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict()
@@ -790,7 +795,11 @@ async function run() {
   }
 
   let customGenesisState: GenesisState | undefined
-  let common = new Common({ chain, hardfork: Hardfork.Chainstart })
+  let common = new Common({
+    chain,
+    hardfork: Hardfork.Chainstart,
+    eips: args.fourFours === true ? [4444] : undefined,
+  })
 
   if (args.dev === true || typeof args.dev === 'string') {
     args.discDns = false
@@ -814,6 +823,7 @@ async function run() {
       common = new Common({
         chain: customChainParams.name,
         customChains: [customChainParams],
+        eips: args.fourFours === true ? [4444] : undefined,
       })
     } catch (err: any) {
       console.error(`invalid chain parameters: ${err.message}`)
@@ -826,6 +836,7 @@ async function run() {
     common = Common.fromGethGenesis(genesisFile, {
       chain: chainName,
       mergeForkIdPostMerge: args.mergeForkIdPostMerge,
+      eips: args.fourFours === true ? [4444] : undefined,
     })
     customGenesisState = parseGethGenesisState(genesisFile)
   }

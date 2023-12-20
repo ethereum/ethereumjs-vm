@@ -86,6 +86,7 @@
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "multiaddr": "^10.0.1",
+    "portalnetwork": "../../ultralight",
     "qheap": "^1.4.0",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",

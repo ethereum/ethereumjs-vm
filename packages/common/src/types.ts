@@ -152,6 +152,9 @@ export type EIPOrHFConfig = {
   vm?: {
     [key: string]: ParamDict
   }
+  history?: {
+    [key: string]: ParamDict
+  }
 }
 
 export type EIPConfig = {
