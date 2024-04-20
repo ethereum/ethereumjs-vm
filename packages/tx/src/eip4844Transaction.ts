@@ -36,7 +36,7 @@ import type {
   TxOptions,
 } from './types.js'
 import type { Common } from '@ethereumjs/common'
-import type { Kzg } from '@ethereumjs/util'
+import type { Bytes32, Kzg } from '@ethereumjs/util'
 
 type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
@@ -538,7 +538,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link BlobEIP4844Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
-  public hash(): Uint8Array {
+  public hash(): Bytes32 {
     return Legacy.hash(this)
   }
 

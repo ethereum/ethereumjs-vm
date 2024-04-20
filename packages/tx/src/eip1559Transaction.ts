@@ -29,6 +29,7 @@ import type {
   TxOptions,
 } from './types.js'
 import type { Common } from '@ethereumjs/common'
+import type { Bytes32 } from '@ethereumjs/util'
 
 type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
@@ -296,7 +297,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link FeeMarketEIP1559Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
-  public hash(): Uint8Array {
+  public hash(): Bytes32 {
     return Legacy.hash(this)
   }
 

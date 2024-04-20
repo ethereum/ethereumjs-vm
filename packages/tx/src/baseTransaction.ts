@@ -25,7 +25,7 @@ import type {
   TxOptions,
   TxValuesArray,
 } from './types.js'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, Bytes32 } from '@ethereumjs/util'
 
 /**
  * This base class will likely be subject to further
@@ -247,7 +247,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   // Returns the hashed unsigned tx, which is used to sign the transaction.
   abstract getHashedMessageToSign(): Uint8Array
 
-  abstract hash(): Uint8Array
+  abstract hash(): Bytes32
 
   abstract getMessageToVerifySignature(): Uint8Array
 

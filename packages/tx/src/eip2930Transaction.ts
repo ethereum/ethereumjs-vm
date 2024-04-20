@@ -27,6 +27,7 @@ import type {
   TxOptions,
 } from './types.js'
 import type { Common } from '@ethereumjs/common'
+import type { Bytes32 } from '@ethereumjs/util'
 
 type TxData = AllTypesTxData[TransactionType.AccessListEIP2930]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2930]
@@ -266,7 +267,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link AccessListEIP2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
-  public hash(): Uint8Array {
+  public hash(): Bytes32 {
     return Legacy.hash(this)
   }
 

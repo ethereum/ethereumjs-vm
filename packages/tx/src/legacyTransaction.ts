@@ -23,6 +23,7 @@ import type {
   TxOptions,
 } from './types.js'
 import type { Common } from '@ethereumjs/common'
+import type { Bytes32 } from '@ethereumjs/util'
 
 type TxData = AllTypesTxData[TransactionType.Legacy]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.Legacy]
@@ -252,7 +253,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
-  hash(): Uint8Array {
+  hash(): Bytes32 {
     return Legacy.hash(this)
   }
 

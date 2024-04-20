@@ -5,6 +5,7 @@ import { BaseTransaction } from '../baseTransaction.js'
 import { Capability } from '../types.js'
 
 import type { LegacyTxInterface } from '../types.js'
+import type { Bytes32 } from '@ethereumjs/util'
 
 export function errorMsg(tx: LegacyTxInterface, msg: string) {
   return `${msg} (${tx.errorStr()})`
@@ -39,7 +40,7 @@ export function getDataFee(tx: LegacyTxInterface, extraCost?: bigint): bigint {
   return cost
 }
 
-export function hash(tx: LegacyTxInterface): Uint8Array {
+export function hash(tx: LegacyTxInterface): Bytes32 {
   if (!tx.isSigned()) {
     const msg = errorMsg(tx, 'Cannot call hash method if transaction is not signed')
     throw new Error(msg)

@@ -5,7 +5,7 @@ import type { AccessListEIP2930Transaction } from './eip2930Transaction.js'
 import type { BlobEIP4844Transaction } from './eip4844Transaction.js'
 import type { LegacyTransaction } from './legacyTransaction.js'
 import type { AccessList, AccessListBytes, Common, Hardfork } from '@ethereumjs/common'
-import type { Address, AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
+import type { Address, AddressLike, BigIntLike, Bytes32, BytesLike } from '@ethereumjs/util'
 export type {
   AccessList,
   AccessListBytes,
@@ -158,7 +158,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   serialize(): Uint8Array
   getMessageToSign(): Uint8Array | Uint8Array[]
   getHashedMessageToSign(): Uint8Array
-  hash(): Uint8Array
+  hash(): Bytes32
   getMessageToVerifySignature(): Uint8Array
   getValidationErrors(): string[]
   isSigned(): boolean

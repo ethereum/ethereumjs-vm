@@ -6,6 +6,9 @@ import type {
   BigIntLike,
   BytesLike,
   JsonRpcWithdrawal,
+  PrefixedHex20,
+  PrefixedHex32,
+  PrefixedHex8,
   PrefixedHexString,
   WithdrawalBytes,
   WithdrawalData,
@@ -255,10 +258,10 @@ export interface JsonRpcBlock {
 
 // Note: all these strings are 0x-prefixed
 export type WithdrawalV1 = {
-  index: PrefixedHexString // Quantity, 8 Bytes
-  validatorIndex: PrefixedHexString // Quantity, 8 bytes
-  address: PrefixedHexString // DATA, 20 bytes
-  amount: PrefixedHexString // Quantity, 32 bytes
+  index: PrefixedHex8 // Quantity
+  validatorIndex: PrefixedHex8 // Quantity
+  address: PrefixedHex20 // DATA
+  amount: PrefixedHex32 // Quantity
 }
 
 // Note: all these strings are 0x-prefixed

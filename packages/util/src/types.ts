@@ -20,10 +20,30 @@ export type BytesLike =
   | TransformabletoBytes
   | PrefixedHexString
 
+/**
+ * Byte type aliases for Uint8Array with a Byte length indicator
+ *
+ * Every type added here should have a corresponding PrefixedHex[NUM] type
+ * (see below).
+ */
+export type Bytes8 = Uint8Array
+export type Bytes20 = Uint8Array
+export type Bytes32 = Uint8Array
+
 /*
  * A type that represents a `0x`-prefixed hex string.
  */
 export type PrefixedHexString = `0x${string}`
+
+/**
+ * Prefixed hex string type aliases for Uint8Array with a Byte length indicator
+ *
+ * Every type added here should have a corresponding Bytes[NUM] type
+ * (see above).
+ */
+export type PrefixedHex8 = string
+export type PrefixedHex20 = string
+export type PrefixedHex32 = string
 
 /**
  * A type that represents an input that can be converted to an Address.
