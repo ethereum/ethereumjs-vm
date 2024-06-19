@@ -10,6 +10,7 @@ import type { MultiaddrLike } from './types.js'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
+import type { PortalNetwork } from 'portalnetwork'
 
 export interface EthereumClientOptions {
   /** Client configuration */
@@ -70,6 +71,7 @@ export class EthereumClient {
   public config: Config
   public chain: Chain
   public services: (FullEthereumService | LightEthereumService)[] = []
+  public portal: PortalNetwork | undefined
 
   public opened: boolean
   public started: boolean
@@ -133,8 +135,15 @@ export class EthereumClient {
       )
     )
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageJson.version} network=${name} chainId=${chainId}`
+      `Initializing Ethereumjs client version=v${packageJson.version} network=${name} chainId=${chainId}}}`
     )
+    if (this.config.portal !== undefined) {
+      this.config.logger.info(
+        `Starting Portal client. enr=${this.config.portal.discv5.enr.encodeTxt()} nodeId=0x${
+          this.config.portal.discv5.enr.nodeId
+        } networks=${[...this.config.portal.networks.values()].map((n) => n.constructor.name)}`
+      )
+    }
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {
       this.config.logger.warn(`Server error: ${error.name} - ${error.message}`)

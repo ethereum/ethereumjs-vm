@@ -17,7 +17,7 @@
     "prepare": "git config --local core.hooksPath .githooks",
     "prettier": "prettier --write \"./**/*.{js,json,md,ts,yml}\"",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "install-browser-deps": "npm install webdriverio @vitest/browser web-streams-polyfill"
+    "install-browser-deps": "npm install webdriverio @vitest/browser@1.5.0 web-streams-polyfill"
   },
   "devDependencies": {
     "@types/estree": "^1.0.1",

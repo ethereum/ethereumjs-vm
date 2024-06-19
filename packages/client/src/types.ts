@@ -175,6 +175,12 @@ export interface ClientOpts {
   skipEngineExec?: boolean
   ignoreStatelessInvalidExecs?: boolean
   useJsCrypto?: boolean
+  enablePortalHistory?: boolean
+  enablePortalState?: boolean
+  enablePortalBeacon?: boolean
+  portalHistory: number
+  portalState: number
+  portalBeacon: number
 }
 
 export type PrometheusMetrics = {

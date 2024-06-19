@@ -4,7 +4,8 @@
   "compilerOptions": {
     "outDir": "dist/esm",
     "typeRoots": ["node_modules/@types", "src/@types"],
-    "composite": true
+    "composite": true,
+    "skipLibCheck": true
   },
   "references": [
     { "path": "../block/tsconfig.prod.cjs.json" },

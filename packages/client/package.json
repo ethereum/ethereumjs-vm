@@ -86,6 +86,7 @@
     "kzg-wasm": "^0.4.0",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
+    "portalnetwork": "0.0.2-rc3",
     "prom-client": "^15.1.0",
     "verkle-cryptography-wasm": "^0.4.2",
     "winston": "^3.3.3",

@@ -114,7 +114,6 @@ const jsonRpcBlock = async (
           withdrawals: json.withdrawals,
         }
       : {}
-  const td = await chain.getTd(block.hash(), block.header.number)
   return {
     number: header.number!,
     hash: bytesToHex(block.hash()),
@@ -128,7 +127,7 @@ const jsonRpcBlock = async (
     receiptsRoot: header.receiptTrie!,
     miner: header.coinbase!,
     difficulty: header.difficulty!,
-    totalDifficulty: bigIntToHex(td),
+    totalDifficulty: header.difficulty!,
     extraData: header.extraData!,
     size: intToHex(utf8ToBytes(JSON.stringify(json)).byteLength),
     gasLimit: header.gasLimit!,
@@ -648,7 +647,16 @@ export class Eth {
    */
   async getBlockByHash(params: [PrefixedHexString, boolean]) {
     const [blockHash, includeTransactions] = params
-
+    if (this.client.config.portal !== undefined && this.client.config.portal.discv5.isStarted()) {
+      const network = this.client.config.portal.network()['0x500b']!
+      const block = await network.ETH.getBlockByHash(blockHash, includeTransactions)
+      if (block === undefined)
+        throw {
+          code: INVALID_PARAMS,
+          message: 'Unknown block',
+        }
+      return jsonRpcBlock(block, this._chain, includeTransactions)
+    }
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await jsonRpcBlock(block, this._chain, includeTransactions)
@@ -668,6 +676,19 @@ export class Eth {
    */
   async getBlockByNumber(params: [string, boolean]) {
     const [blockOpt, includeTransactions] = params
+    if (this.client.config.portal !== undefined && this.client.config.portal.discv5.isStarted()) {
+      const block = await this.client.config.portal.ETH.getBlockByNumber(
+        parseInt(blockOpt, 16),
+        includeTransactions
+      )
+      if (block === undefined)
+        throw {
+          code: INVALID_PARAMS,
+          message: 'Unknown block',
+        }
+      //@ts-ignore -- Ultralight isn't using the latest EthJS code (which includes Pectra stuff)
+      return jsonRpcBlock(block, this._chain, includeTransactions)
+    }
     const block = await getBlockByOption(blockOpt, this._chain)
     return jsonRpcBlock(block, this._chain, includeTransactions)
   }
