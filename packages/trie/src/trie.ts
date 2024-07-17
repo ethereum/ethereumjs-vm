@@ -30,7 +30,7 @@ import {
 import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
-import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
+import { bytesToNibbles, matchingNibbleLength, orderBatch } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
@@ -496,14 +496,15 @@ export class Trie {
   async put(
     key: Uint8Array,
     value: Uint8Array | null,
-    skipKeyTransform: boolean = false
-  ): Promise<void> {
+    skipKeyTransform: boolean = false,
+    path?: { stack: TrieNode[]; remaining: number[] }
+  ): Promise<TrieNode[]> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['PUT'])
     this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['PUT'])
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
       throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
-
+    let returnStack: TrieNode[] = []
     // If value is empty, delete
     if (value === null || value.length === 0) {
       return this.del(key)
@@ -513,10 +514,10 @@ export class Trie {
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) === true) {
       // If no root, initialize this trie
-      await this._createInitialNode(appliedKey, value)
+      returnStack = [await this._createInitialNode(appliedKey, value)]
     } else {
       // First try to find the given key or its nearest node
-      const { remaining, stack } = await this.findPath(appliedKey)
+      const { remaining, stack } = path ?? (await this.findPath(appliedKey))
       let ops: BatchDBOp[] = []
       if (this._opts.useNodePruning) {
         const val = await this.get(key)
@@ -544,7 +545,7 @@ export class Trie {
         }
       }
       // then update
-      await this._updateNode(appliedKey, value, remaining, stack)
+      returnStack = await this._updateNode(appliedKey, value, remaining, stack)
       if (this._opts.useNodePruning) {
         // Only after updating the node we can delete the keyhashes
         await this._db.batch(ops)
@@ -552,6 +553,7 @@ export class Trie {
     }
     await this.persistRoot()
     this._lock.release()
+    return returnStack
   }
 
   /**
@@ -560,11 +562,16 @@ export class Trie {
    * @param key
    * @returns A Promise that resolves once value is deleted.
    */
-  async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
+  async del(
+    key: Uint8Array,
+    skipKeyTransform: boolean = false,
+    path?: { stack: TrieNode[]; remaining: number[] }
+  ): Promise<TrieNode[]> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['DEL'])
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-    const { node, stack } = await this.findPath(appliedKey)
+    const partialPath = path && { stack: path.stack }
+    const { node, stack } = await this.findPath(appliedKey, false, partialPath)
 
     let ops: BatchDBOp[] = []
     // Only delete if the `key` currently has any value
@@ -595,6 +602,7 @@ export class Trie {
     }
     await this.persistRoot()
     this._lock.release()
+    return stack
   }
 
   /**
@@ -777,7 +785,7 @@ export class Trie {
    * Creates the initial node from an empty tree.
    * @private
    */
-  protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
+  protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<TrieNode> {
     const newNode = new LeafNode(bytesToNibbles(key), value)
 
     const encoded = newNode.serialize()
@@ -786,6 +794,7 @@ export class Trie {
     rootKey = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
     await this._db.put(rootKey, encoded)
     await this.persistRoot()
+    return newNode
   }
 
   /**
@@ -824,7 +833,7 @@ export class Trie {
     value: Uint8Array,
     keyRemainder: Nibbles,
     stack: TrieNode[]
-  ): Promise<void> {
+  ): Promise<TrieNode[]> {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
     if (!lastNode) {
@@ -915,7 +924,9 @@ export class Trie {
       }
     }
 
+    const returnStack = [...stack]
     await this.saveStack(key, stack, toSave)
+    return returnStack
   }
 
   /**
@@ -1146,17 +1157,59 @@ export class Trie {
    * @param ops
    */
   async batch(ops: BatchDBOp[], skipKeyTransform?: boolean): Promise<void> {
-    for (const op of ops) {
-      if (op.type === 'put') {
-        if (op.value === null || op.value === undefined) {
-          throw new Error('Invalid batch db operation')
+    const keyTransform =
+      skipKeyTransform === true
+        ? undefined
+        : (msg: Uint8Array) => {
+            return this.appliedKey(msg)
+          }
+    const sortedOps = orderBatch(ops, keyTransform)
+    let stack: TrieNode[] = []
+    const stackPathCache: Map<string, TrieNode> = new Map()
+    for (const op of sortedOps) {
+      const appliedKey = skipKeyTransform === true ? op.key : this.appliedKey(op.key)
+      const nibbles = bytesToNibbles(appliedKey)
+      stack = []
+      let remaining = nibbles
+      for (let i = 0; i < nibbles.length; i++) {
+        const p: string = JSON.stringify(nibbles.slice(0, i) as number[])
+        if (stackPathCache.has(p)) {
+          const node = stackPathCache.get(p)!
+          stack.push(node)
+          remaining = nibbles.slice(i)
         }
-        await this.put(op.key, op.value, skipKeyTransform)
+      }
+      const _path =
+        stack.length > 0
+          ? {
+              stack,
+              remaining,
+            }
+          : undefined
+      if (op.type === 'put') {
+        stack = await this.put(op.key, op.value, skipKeyTransform, _path)
+        const path: number[] = []
+        for (const node of stack) {
+          stackPathCache.set(JSON.stringify([...path]), node)
+          if (node instanceof BranchNode) {
+            path.push(nibbles.shift()!)
+          } else {
+            path.push(...nibbles.splice(0, node.keyLength()))
+          }
+        }
       } else if (op.type === 'del') {
-        await this.del(op.key, skipKeyTransform)
+        stack = await this.put(op.key, null, skipKeyTransform, _path)
+        const path: number[] = []
+        for (const node of stack) {
+          stackPathCache.set(JSON.stringify([...path]), node)
+          if (node instanceof BranchNode) {
+            path.push(nibbles.shift()!)
+          } else {
+            path.push(...nibbles.splice(0, node.keyLength()))
+          }
+        }
       }
     }
-    await this.persistRoot()
   }
 
   // This method verifies if all keys in the trie (except the root) are reachable

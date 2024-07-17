@@ -1,6 +1,7 @@
 import { toBytes } from '@ethereumjs/util'
 
 import type { Nibbles } from '../types.js'
+import type { BatchDBOp } from '@ethereumjs/util'
 
 /**
  * Converts a bytes to a nibble array.
@@ -90,4 +91,21 @@ export function matchingNibbleLength(nib1: Nibbles, nib2: Nibbles): number {
 export function doKeysMatch(keyA: Nibbles, keyB: Nibbles): boolean {
   const length = matchingNibbleLength(keyA, keyB)
   return length === keyA.length && length === keyB.length
+}
+
+export function orderBatch(
+  ops: BatchDBOp[],
+  keyTransform: (msg: Uint8Array) => Uint8Array = (msg: Uint8Array) => {
+    return msg
+  }
+): BatchDBOp[] {
+  const keyNibbles: [number, number[]][] = ops.map((o, i) => {
+    const appliedKey = keyTransform(o.key)
+    const nibbles: number[] = bytesToNibbles(appliedKey)
+    return [i, nibbles]
+  })
+  keyNibbles.sort(([_, a], [__, b]) => {
+    return nibblesCompare(a, b)
+  })
+  return keyNibbles.map(([i, _]) => ops[i])
 }
