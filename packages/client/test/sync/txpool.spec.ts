@@ -11,7 +11,6 @@ import {
   privateToAddress,
 } from '@ethereumjs/util'
 import * as http from 'http'
-import * as promClient from 'prom-client'
 import * as url from 'url'
 import { assert, describe, it } from 'vitest'
 
@@ -19,12 +18,11 @@ import { Config } from '../../src/config.js'
 import { getLogger } from '../../src/logging.js'
 import { PeerPool } from '../../src/net/peerpool.js'
 import { TxPool } from '../../src/service/txpool.js'
-
-import type { PrometheusMetrics } from '../../src/types.js'
+import { type PrometheusMetrics, loadPromClient } from '../../src/util/metrics.js'
 
 let prometheusMetrics: PrometheusMetrics | undefined
 
-const setup = () => {
+const setup = async () => {
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
@@ -41,53 +39,57 @@ const setup = () => {
     },
   }
   let metricsServer
-
-  if (prometheusMetrics === undefined) {
-    prometheusMetrics = {
-      legacyTxGauge: new promClient.Gauge({
-        name: 'legacy_transactions_in_transaction_pool',
-        help: 'Number of legacy transactions in the client transaction pool',
-      }),
-      accessListEIP2930TxGauge: new promClient.Gauge({
-        name: 'access_list_eip2930_transactions_in_transaction_pool',
-        help: 'Number of access list EIP 2930 transactions in the client transaction pool',
-      }),
-      feeMarketEIP1559TxGauge: new promClient.Gauge({
-        name: 'fee_market_eip1559_transactions_in_transaction_pool',
-        help: 'Number of fee market EIP 1559 transactions in the client transaction pool',
-      }),
-      blobEIP4844TxGauge: new promClient.Gauge({
-        name: 'blob_eip_4844_transactions_in_transaction_pool',
-        help: 'Number of blob EIP 4844 transactions in the client transaction pool',
-      }),
-    }
-
-    const register = new promClient.Registry()
-    register.setDefaultLabels({
-      app: 'ethereumjs-client',
-    })
-    promClient.collectDefaultMetrics({ register })
-    for (const [_, metric] of Object.entries(prometheusMetrics)) {
-      register.registerMetric(metric)
-    }
-
-    metricsServer = http.createServer(async (req, res) => {
-      if (req.url === undefined) {
-        res.statusCode = 400
-        res.end('Bad Request: URL is missing')
-        return
+  try {
+    if (prometheusMetrics === undefined) {
+      const promClient = await loadPromClient()
+      prometheusMetrics = {
+        legacyTxGauge: new promClient.Gauge({
+          name: 'legacy_transactions_in_transaction_pool',
+          help: 'Number of legacy transactions in the client transaction pool',
+        }),
+        accessListEIP2930TxGauge: new promClient.Gauge({
+          name: 'access_list_eip2930_transactions_in_transaction_pool',
+          help: 'Number of access list EIP 2930 transactions in the client transaction pool',
+        }),
+        feeMarketEIP1559TxGauge: new promClient.Gauge({
+          name: 'fee_market_eip1559_transactions_in_transaction_pool',
+          help: 'Number of fee market EIP 1559 transactions in the client transaction pool',
+        }),
+        blobEIP4844TxGauge: new promClient.Gauge({
+          name: 'blob_eip_4844_transactions_in_transaction_pool',
+          help: 'Number of blob EIP 4844 transactions in the client transaction pool',
+        }),
       }
-      const reqUrl = new url.URL(req.url, `http://${req.headers.host}`)
-      const route = reqUrl.pathname
 
-      if (route === '/metrics') {
-        // Return all metrics in the Prometheus exposition format
-        res.setHeader('Content-Type', register.contentType)
-        res.end(await register.metrics())
+      const register = new promClient.Registry()
+      register.setDefaultLabels({
+        app: 'ethereumjs-client',
+      })
+      promClient.collectDefaultMetrics({ register })
+      for (const [_, metric] of Object.entries(prometheusMetrics)) {
+        register.registerMetric(metric)
       }
-    })
-    // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
-    metricsServer.listen(8080)
+
+      metricsServer = http.createServer(async (req, res) => {
+        if (req.url === undefined) {
+          res.statusCode = 400
+          res.end('Bad Request: URL is missing')
+          return
+        }
+        const reqUrl = new url.URL(req.url, `http://${req.headers.host}`)
+        const route = reqUrl.pathname
+
+        if (route === '/metrics') {
+          // Return all metrics in the Prometheus exposition format
+          res.setHeader('Content-Type', register.contentType)
+          res.end(await register.metrics())
+        }
+      })
+      // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
+      metricsServer.listen(8080)
+    }
+  } catch {
+    // If prom-client is not installed, skip the tests
   }
 
   const config = new Config({
@@ -110,7 +112,7 @@ const handleTxs = async (
   pool?: TxPool,
 ) => {
   if (pool === undefined) {
-    pool = setup().pool
+    pool = (await setup()).pool
   }
   try {
     if (stateManager !== undefined) {
@@ -187,8 +189,8 @@ describe('[TxPool]', async () => {
   const txB01 = createTx(B, A) // B -> A, nonce: 0, value: 1
   const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
 
-  it('should initialize correctly', () => {
-    const { pool } = setup()
+  it('should initialize correctly', async () => {
+    const { pool } = await setup()
     assert.equal(pool.pool.size, 0, 'pool empty')
     assert.notOk((pool as any).opened, 'pool not opened yet')
     pool.open()
@@ -202,7 +204,7 @@ describe('[TxPool]', async () => {
   })
 
   it('should open/close', async () => {
-    const { pool } = setup()
+    const { pool } = await setup()
 
     pool.open()
     pool.start()
@@ -216,7 +218,7 @@ describe('[TxPool]', async () => {
   it('announcedTxHashes() -> add single tx / knownByPeer / getByHash()', async () => {
     // Safeguard that send() method from peer2 gets called
 
-    const { pool, metricsServer } = setup()
+    const { pool, metricsServer } = await setup()
 
     pool.open()
     pool.start()
@@ -317,7 +319,7 @@ describe('[TxPool]', async () => {
   })
 
   it('announcedTxHashes() -> TX_RETRIEVAL_LIMIT', async () => {
-    const { pool } = setup()
+    const { pool } = await setup()
     const TX_RETRIEVAL_LIMIT: number = (pool as any).TX_RETRIEVAL_LIMIT
 
     pool.open()
@@ -349,7 +351,7 @@ describe('[TxPool]', async () => {
   })
 
   it('announcedTxHashes() -> add two txs (different sender)', async () => {
-    const { pool } = setup()
+    const { pool } = await setup()
 
     pool.open()
     pool.start()
@@ -370,7 +372,7 @@ describe('[TxPool]', async () => {
   })
 
   it('announcedTxHashes() -> add two txs (same sender and nonce)', async () => {
-    const { pool } = setup()
+    const { pool } = await setup()
 
     pool.open()
     pool.start()
@@ -395,7 +397,7 @@ describe('[TxPool]', async () => {
   })
 
   it('announcedTxHashes() -> reject underpriced txn (same sender and nonce)', async () => {
-    const { pool } = setup()
+    const { pool } = await setup()
 
     pool.open()
     pool.start()
@@ -461,7 +463,7 @@ describe('[TxPool]', async () => {
   })
 
   it('announcedTxHashes() -> reject underpriced txn (same sender and nonce) in handleAnnouncedTxHashes', async () => {
-    const { pool } = setup()
+    const { pool } = await setup()
 
     pool.open()
     pool.start()
@@ -617,7 +619,7 @@ describe('[TxPool]', async () => {
       }).sign(A.privateKey),
     )
 
-    const { pool } = setup()
+    const { pool } = await setup()
 
     ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
       baseFeePerGas: BigInt(3000000000),
@@ -641,7 +643,7 @@ describe('[TxPool]', async () => {
       }).sign(A.privateKey),
     )
 
-    const { pool } = setup()
+    const { pool } = await setup()
 
     ;(<any>pool).service.chain.getCanonicalHeadHeader = () => ({
       gasLimit: BigInt(5000),
@@ -665,7 +667,7 @@ describe('[TxPool]', async () => {
 
     txs.push(txs[0])
 
-    const { pool } = setup()
+    const { pool } = await setup()
 
     assert.notOk(
       await handleTxs(txs, 'this transaction is already in the TxPool', undefined, pool),
@@ -727,7 +729,7 @@ describe('[TxPool]', async () => {
   })
 
   it('announcedTxs()', async () => {
-    const { pool } = setup()
+    const { pool } = await setup()
 
     pool.open()
     pool.start()
@@ -749,7 +751,7 @@ describe('[TxPool]', async () => {
   })
 
   it('newBlocks() -> should remove included txs', async () => {
-    const { pool } = setup()
+    const { pool } = await setup()
 
     pool.open()
     pool.start()
@@ -811,7 +813,7 @@ describe('[TxPool]', async () => {
   })
 
   it('cleanup()', async () => {
-    const { pool } = setup()
+    const { pool } = await setup()
 
     pool.open()
     pool.start()

@@ -7,7 +7,6 @@ import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type * as promClient from 'prom-client'
 
 /**
  * Types for the central event bus, emitted
@@ -177,11 +176,4 @@ export interface ClientOpts {
   skipEngineExec?: boolean
   ignoreStatelessInvalidExecs?: boolean
   useJsCrypto?: boolean
-}
-
-export type PrometheusMetrics = {
-  legacyTxGauge: promClient.Gauge<string>
-  accessListEIP2930TxGauge: promClient.Gauge<string>
-  feeMarketEIP1559TxGauge: promClient.Gauge<string>
-  blobEIP4844TxGauge: promClient.Gauge<string>
 }

@@ -1,6 +1,16 @@
-import * as promClient from 'prom-client'
+import type * as promClient from 'prom-client'
 
-export const setupMetrics = () => {
+export const loadPromClient = async () => {
+  try {
+    const promClient = await import('prom-client')
+    return promClient
+  } catch (error) {
+    throw new Error('Missing prom-client import')
+  }
+}
+
+export const setupMetrics = async () => {
+  const promClient = await loadPromClient()
   return {
     legacyTxGauge: new promClient.Gauge({
       name: 'legacy_transactions_in_transaction_pool',
@@ -19,4 +29,11 @@ export const setupMetrics = () => {
       help: 'Number of blob EIP 4844 transactions in the client transaction pool',
     }),
   }
+}
+
+export type PrometheusMetrics = {
+  legacyTxGauge: promClient.Gauge<string>
+  accessListEIP2930TxGauge: promClient.Gauge<string>
+  feeMarketEIP1559TxGauge: promClient.Gauge<string>
+  blobEIP4844TxGauge: promClient.Gauge<string>
 }
