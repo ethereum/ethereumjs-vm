@@ -69,7 +69,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.setStateRoot(initialStateRoot)
       try {
         await stateManager.getStorage(address, key)
-      } catch (e) {
+      } catch {
         assert.ok(true, 'should throw if getStorage() is called on non existing address')
       }
     })

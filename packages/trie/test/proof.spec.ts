@@ -193,7 +193,7 @@ describe('simple merkle proofs generation and verification', () => {
     try {
       await updateTrieFromMerkleProof(newTrie, safeProof, true)
       assert.fail('cannot reach this')
-    } catch (e) {
+    } catch {
       assert.ok(true, 'throws on unmatching proof')
     }
 

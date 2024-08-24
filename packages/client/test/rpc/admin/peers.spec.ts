@@ -10,6 +10,7 @@ describe(method, () => {
     const manager = createManager(await createClient({ opened: true, noPeers: true }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
+    // eslint-disable-next-line no-console
     console.log(manager['_client'].services[0].pool)
     //@ts-ignore
     manager['_client'].services[0].pool.peers = [
@@ -32,6 +33,7 @@ describe(method, () => {
     ]
     const res = await rpc.request(method, [])
     const { result } = res
+    // eslint-disable-next-line no-console
     console.log(res)
     assert.notEqual(result, undefined, 'admin_peers returns a value')
   })

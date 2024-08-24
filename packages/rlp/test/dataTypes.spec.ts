@@ -329,7 +329,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(val)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -343,7 +343,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(a)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -358,7 +358,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(a)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -373,7 +373,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(a)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -388,7 +388,7 @@ describe('bad values', () => {
     let result
     try {
       result = RLP.decode(a)
-    } catch (e) {
+    } catch {
       // pass
     }
     assert.deepEqual(result, undefined)
@@ -410,9 +410,8 @@ describe('recursive typings', () => {
     const assertType = <T, U>(isTrue: IsType<T, U>) => {
       return isTrue
     }
-    // tslint:disable-next-line:no-dead-store
-    const a = RLP.encode([[[[[0]]]]])
-    assert.ok(assertType<typeof a, Uint8Array>(true))
+    const _a = RLP.encode([[[[[0]]]]])
+    assert.ok(assertType<typeof _a, Uint8Array>(true))
   })
 })
 

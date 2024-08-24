@@ -92,7 +92,7 @@ describe('simple mainnet test run', async () => {
     try {
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
-    } catch (e) {
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60_000)

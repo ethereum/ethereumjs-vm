@@ -229,7 +229,7 @@ export class Interpreter {
 
       try {
         setupEOF(this._runState, eofMode)
-      } catch (e) {
+      } catch {
         return {
           runState: this._runState,
           exceptionError: new EvmError(ERROR.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
@@ -245,7 +245,7 @@ export class Interpreter {
             ContainerSectionType.InitCode,
             EOFContainerMode.TxInitmode,
           )
-        } catch (e) {
+        } catch {
           // Trying to deploy an invalid EOF container
           return {
             runState: this._runState,

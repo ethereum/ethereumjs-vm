@@ -3,9 +3,10 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/cjs",
-    "types": ["node"],
-    "typeRoots": ["node_modules/@types"],
-    "composite": true
+    "composite": true,
+    "paths": {
+      "@ethereumjs/rlp": ["../rlp/src/index.ts"] // Adjust the path as necessary
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [

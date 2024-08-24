@@ -4,7 +4,6 @@
   "compilerOptions": {
     "outDir": "dist/cjs",
     "rootDir": "src",
-    "typeRoots": ["node_modules/@types", "src/@types"],
     "composite": true
   },
   "references": [

@@ -56,7 +56,7 @@ export async function* _walkTrie(
       const nextKey = [...currentKey, ...node._nibbles]
       yield* _walkTrie.bind(this)(childNode, nextKey, onFound, filter, visited)
     }
-  } catch (e) {
+  } catch {
     return
   }
 }

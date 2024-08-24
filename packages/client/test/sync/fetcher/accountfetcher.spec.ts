@@ -391,7 +391,7 @@ describe('[AccountFetcher]', async () => {
     try {
       await Promise.race([snapCompleted, snapSyncTimeout])
       assert.ok(true, 'completed snap sync')
-    } catch (e) {
+    } catch {
       assert.fail('could not complete snap sync in 40 seconds')
     }
 

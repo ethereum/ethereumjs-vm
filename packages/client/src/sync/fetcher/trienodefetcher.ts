@@ -291,7 +291,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               // look up node in account trie
               await this.accountTrie.lookupNode(childNode.nodeHash as Uint8Array)
             }
-          } catch (e) {
+          } catch {
             // if error is thrown, than the node is unknown and should be queued for fetching
             unknownChildNodeCount++
             const { parentAccountHash } = this.pathToNodeRequestData.getElementByKey(

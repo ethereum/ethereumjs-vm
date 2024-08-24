@@ -224,7 +224,7 @@ describe('[Invalid Access Lists]', () => {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
             assert.fail('did not fail on `fromTxData`')
-          } catch (e: any) {
+          } catch {
             assert.ok(true, 'failed ok on decoding in `fromTxData`')
             tx = createTxFromTxData({ type: txType })
             if (signed) {

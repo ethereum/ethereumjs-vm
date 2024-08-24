@@ -384,7 +384,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx: tx2 })
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch {
       assert.ok(true, 'successfully threw on insufficient balance for transaction')
     }
   })
@@ -401,7 +401,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx })
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch {
       assert.ok(true, 'successfully threw on wrong nonces')
     }
   })
@@ -416,9 +416,9 @@ describe('runTx() -> API parameter usage/data errors', () => {
       try {
         await runTx(vm, { tx, block })
         assert.fail('should fail')
-      } catch (e: any) {
+      } catch (e) {
         assert.ok(
-          e.message.includes("is less than the block's baseFeePerGas"),
+          (e as Error).message.includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error',
         )
       }

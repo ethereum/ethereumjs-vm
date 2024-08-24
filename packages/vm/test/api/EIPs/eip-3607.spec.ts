@@ -35,7 +35,7 @@ describe('EIP-3607 tests', () => {
     try {
       await runTx(vm, { tx, skipHardForkValidation: true })
       assert.ok('runTx successfully ran')
-    } catch (error: any) {
+    } catch {
       assert.fail('threw an unexpected error')
     }
   })

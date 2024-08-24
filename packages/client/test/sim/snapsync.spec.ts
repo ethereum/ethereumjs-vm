@@ -158,7 +158,7 @@ describe('simple mainnet test run', async () => {
       try {
         await Promise.race([peerConnectedPromise, peerConnectTimeout])
         assert.ok(true, 'connected to geth peer')
-      } catch (e) {
+      } catch {
         assert.fail('could not connect to geth peer in 10 seconds')
       }
     },
@@ -189,7 +189,7 @@ describe('simple mainnet test run', async () => {
 
           await Promise.race([beaconSyncPromise, snapSyncTimeout])
           assert.ok(true, 'completed snap sync')
-        } catch (e) {
+        } catch {
           assert.fail('could not complete snap sync in 8 minutes')
         }
 
@@ -233,7 +233,7 @@ describe('simple mainnet test run', async () => {
       await ejsClient?.stop()
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
-    } catch (e) {
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60_000)
@@ -282,7 +282,7 @@ async function createSnapClient(
   return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise, beaconSyncRelayer }
 }
 
-process.on('uncaughtException', (err, origin) => {
+process.on('uncaughtException', (err: any, origin: any) => {
   console.log({ err, origin })
   process.exit()
 })

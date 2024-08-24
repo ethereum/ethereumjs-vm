@@ -419,7 +419,7 @@ describe('[Skeleton] / setHead', async () => {
     ;(chain.blockchain as any)._validateBlocks = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    } catch (e) {
+    } catch {
       assert.ok(true, `Skeleton init should error if merge not set`)
     }
   })
@@ -471,7 +471,7 @@ describe('[Skeleton] / setHead', async () => {
     try {
       await skeleton.putBlocks([block1])
       assert.fail('should have not allowed putBlocks since no subchain set')
-    } catch (_e) {
+    } catch {
       assert.ok(true, 'should not allow putBlocks since no subchain set')
     }
     assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')

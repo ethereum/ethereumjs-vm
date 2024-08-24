@@ -27,7 +27,7 @@ export async function verifyTrieProof(
     const proofTrie = await createTrieFromProof(proof, opts)
     const value = await proofTrie.get(key, true)
     return value
-  } catch (err: any) {
+  } catch {
     throw new Error('Invalid proof provided')
   }
 }
@@ -149,7 +149,7 @@ export async function verifyMerkleProof(
   })
   try {
     await updateTrieFromMerkleProof(proofTrie, proof, true)
-  } catch (e: any) {
+  } catch {
     throw new Error('Invalid proof nodes given')
   }
   try {

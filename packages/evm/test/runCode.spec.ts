@@ -68,7 +68,7 @@ describe('VM.runCode: interpreter', () => {
     let result: any
     try {
       result = await evm.runCode!(runCodeArgs)
-    } catch (e: any) {
+    } catch {
       assert.fail('should not throw error')
     }
     assert.equal(result!.exceptionError!.errorType, 'EvmError')

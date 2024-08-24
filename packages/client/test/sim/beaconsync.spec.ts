@@ -174,7 +174,7 @@ describe('simple mainnet test run', async () => {
           )
           await ejsClient.stop()
           assert.ok(true, 'completed beacon sync')
-        } catch (e) {
+        } catch {
           console.log()
           assert.fail('could not complete beacon sync in 8 minutes')
         }
@@ -190,7 +190,7 @@ describe('simple mainnet test run', async () => {
       beaconSyncRelayer?.close()
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
-    } catch (e) {
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60000)
@@ -225,7 +225,7 @@ async function createBeaconSyncClient(
   return { ejsInlineClient, peerConnectedPromise, beaconSyncRelayer }
 }
 
-process.on('uncaughtException', (err, origin) => {
+process.on('uncaughtException', (err: any, origin: any) => {
   console.log({ err, origin })
   process.exit()
 })

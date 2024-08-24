@@ -108,7 +108,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
     try {
       await teardownCallBack()
       assert.ok(true, 'script terminated')
-    } catch (e) {
+    } catch {
       assert.fail('could not terminate properly')
     }
   }, 60_000)

@@ -57,7 +57,7 @@ export async function waitForELOnline(client: Client): Promise<string> {
       console.log('Waiting for EL online...')
       const res = await client.request('web3_clientVersion', [])
       return res.result as string
-    } catch (e) {
+    } catch {
       await sleep(4000)
     }
   }

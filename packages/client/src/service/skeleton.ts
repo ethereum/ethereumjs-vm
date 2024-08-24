@@ -1286,7 +1286,7 @@ export class Skeleton extends MetaDBManager {
                 parent?.hash() ?? 'undefined',
               )} hf=${parent?.common.hardfork()}`,
             )
-          } catch (e) {
+          } catch {
             this.config.logger.error(`Failed to fetch parent of number=${number}`)
           }
 
@@ -1298,7 +1298,7 @@ export class Skeleton extends MetaDBManager {
                 parentWithHash?.hash() ?? 'undefined',
               )} hf=${parentWithHash?.common.hardfork()}  `,
             )
-          } catch (e) {
+          } catch {
             this.config.logger.error(
               `Failed to fetch parent with parentWithHash=${short(block.header.parentHash)}`,
             )
@@ -1401,13 +1401,13 @@ export class Skeleton extends MetaDBManager {
         throw Error(`SkeletonBlock rlp lookup failed for ${number} onlyCanonical=${onlyCanonical}`)
       }
       return this.skeletonBlockRlpToBlock(skeletonBlockRlp)
-    } catch (error: any) {
+    } catch {
       // If skeleton is linked, it probably has deleted the block and put it into the chain
       if (onlyCanonical && !this.status.linked) return undefined
       // As a fallback, try to get the block from the canonical chain in case it is available there
       try {
         return await this.chain.getBlock(number)
-      } catch (error) {
+      } catch {
         return undefined
       }
     }
@@ -1460,7 +1460,7 @@ export class Skeleton extends MetaDBManager {
         throw Error(`SkeletonUnfinalizedBlockByHash rlp lookup failed for hash=${short(hash)}`)
       }
       return this.skeletonBlockRlpToBlock(skeletonBlockRlp)
-    } catch (_e) {
+    } catch {
       return undefined
     }
   }
@@ -1474,7 +1474,7 @@ export class Skeleton extends MetaDBManager {
       await this.delete(DBKey.SkeletonBlockHashToNumber, block.hash())
       await this.delete(DBKey.SkeletonUnfinalizedBlockByHash, block.hash())
       return true
-    } catch (error: any) {
+    } catch {
       return false
     }
   }

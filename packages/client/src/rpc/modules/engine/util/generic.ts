@@ -65,7 +65,7 @@ export const validExecutedChainBlock = async (
 
     // if the block was canonical and executed we would have returned by now
     return null
-  } catch (error: any) {
+  } catch {
     return null
   }
 }
@@ -105,7 +105,7 @@ export const validHash = async (
         hash = validParent.header.parentHash
       }
     }
-  } catch (_error: any) {
+  } catch {
     // ignore error thrown by the loop and return null below
   }
 

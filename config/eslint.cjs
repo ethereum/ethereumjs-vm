@@ -22,16 +22,14 @@ module.exports = {
     'node_modules',
     'prettier.config.js',
     'recipes',
-    'rlp.cjs',
     'scripts',
     'typedoc.js',
     'webpack.config.js',
     'vitest.config.ts',
     'vitest.config.browser.ts',
-    'vitest.config.unit.ts'
+    'vitest.config.unit.ts',
   ],
   extends: [
-    'typestrict',
     'eslint:recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
@@ -68,7 +66,7 @@ module.exports = {
     'import/default': 'error',
     'import/export': 'error',
     'import/exports-last': 'off', // TODO: set to `warn` for fixing and then `error`
-    'import/extensions': ['error','ignorePackages'],
+    'import/extensions': ['error', 'ignorePackages'],
     'import/first': 'error',
     'import/group-exports': 'off',
     'import/named': 'error',

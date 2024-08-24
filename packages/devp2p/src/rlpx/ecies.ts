@@ -231,7 +231,7 @@ export class ECIES {
     data: Uint8Array,
     sharedMacData: Uint8Array | null = null,
   ): Uint8Array | undefined {
-    const prefix = sharedMacData !== null ? sharedMacData : new Uint8Array()
+    const prefix = sharedMacData ?? new Uint8Array()
     this._remoteInitMsg = concatBytes(prefix, data)
     const decrypted = this._decryptMessage(data, sharedMacData)
 

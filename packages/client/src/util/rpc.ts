@@ -232,7 +232,7 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
       const { jwtSecret } = withEngineMiddleware
       try {
         checkHeaderAuth(req, jwtSecret)
-      } catch (error) {
+      } catch {
         socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
         socket.destroy()
       }

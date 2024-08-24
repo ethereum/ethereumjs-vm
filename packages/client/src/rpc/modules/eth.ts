@@ -681,7 +681,7 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await jsonRpcBlock(block, this._chain, includeTransactions)
-    } catch (error) {
+    } catch {
       return null
     }
   }
@@ -718,7 +718,7 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return intToHex(block.transactions.length)
-    } catch (error) {
+    } catch {
       throw {
         code: INVALID_PARAMS,
         message: 'Unknown block',
@@ -1064,7 +1064,7 @@ export class Eth {
     if (blockHash !== undefined) {
       try {
         from = to = await this._chain.getBlock(hexToBytes(blockHash))
-      } catch (error: any) {
+      } catch {
         throw {
           code: INVALID_PARAMS,
           message: 'unknown blockHash',

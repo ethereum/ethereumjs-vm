@@ -274,7 +274,7 @@ export class CliqueConsensus implements Consensus {
           i++
         }
         // eslint-disable-next-line no-empty
-      } catch (e) {}
+      } catch {}
     }
   }
 

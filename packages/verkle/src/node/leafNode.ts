@@ -41,7 +41,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     values?: (Uint8Array | VerkleLeafNodeValue)[],
   ): Promise<LeafNode> {
     // Generate the value arrays for c1 and c2
-    values = values !== undefined ? values : createDefaultLeafValues()
+    values = values ?? createDefaultLeafValues()
     const c1Values = createCValues(values.slice(0, 128))
     const c2Values = createCValues(values.slice(128))
     let c1 = verkleCrypto.zeroCommitment

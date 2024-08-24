@@ -280,7 +280,7 @@ export abstract class BaseTransaction<T extends TransactionType>
       // Main signature verification is done in `getSenderPublicKey()`
       const publicKey = this.getSenderPublicKey()
       return unpadBytes(publicKey).length !== 0
-    } catch (e: any) {
+    } catch {
       return false
     }
   }
@@ -451,19 +451,19 @@ export abstract class BaseTransaction<T extends TransactionType>
     let hash = ''
     try {
       hash = this.isSigned() ? bytesToHex(this.hash()) : 'not available (unsigned)'
-    } catch (e: any) {
+    } catch {
       hash = 'error'
     }
     let isSigned = ''
     try {
       isSigned = this.isSigned().toString()
-    } catch (e: any) {
+    } catch {
       hash = 'error'
     }
     let hf = ''
     try {
       hf = this.common.hardfork()
-    } catch (e: any) {
+    } catch {
       hf = 'error'
     }
 

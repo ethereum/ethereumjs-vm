@@ -4,7 +4,14 @@
     "lib": ["dom"],
     "rootDir": "src",
     "outDir": "dist/cjs",
-    "composite": true
+    "composite": true,
+    "paths": {
+      "@ethereumjs/common": ["../common/src/index.ts"],
+      "@ethereumjs/rlp": ["../rlp/src/index.ts"],
+      "@ethereumjs/trie": ["../trie/src/index.ts"],
+      "@ethereumjs/tx": ["../tx/src/index.ts"],
+      "@ethereumjs/util": ["../util/src/index.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "references": [

@@ -208,7 +208,7 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(true, testCase)
-    } catch (error: any) {
+    } catch {
       assert.fail(testCase)
     }
 
@@ -219,7 +219,7 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(testCase)
-    } catch (error: any) {
+    } catch {
       assert.fail(testCase)
     }
 
@@ -250,7 +250,7 @@ describe('[Block]: Header functions', () => {
     try {
       createBlockHeader({ ...data, extraData }, opts)
       assert.ok(true, testCase)
-    } catch (error: any) {
+    } catch {
       assert.fail(testCase)
     }
 
@@ -301,7 +301,7 @@ describe('[Block]: Header functions', () => {
         true,
         'should instantiate header with invalid extraData when skipConsensusFormatValidation === true',
       )
-    } catch (error: any) {
+    } catch {
       assert.fail('should not throw')
     }
   })

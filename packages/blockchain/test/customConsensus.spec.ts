@@ -57,7 +57,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
         'fibonacciConsensus',
         'consensus algorithm matches',
       )
-    } catch (err) {
+    } catch {
       assert.fail('blockchain should instantiate successfully')
     }
   })

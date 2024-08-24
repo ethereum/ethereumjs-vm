@@ -690,10 +690,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Generate the tx receipt
-  const gasUsed =
-    opts.blockGasUsed !== undefined
-      ? opts.blockGasUsed
-      : (block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed)
+  const gasUsed = opts.blockGasUsed ?? block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed
   const cumulativeGasUsed = gasUsed + results.totalGasSpent
   results.receipt = await generateTxReceipt(
     vm,

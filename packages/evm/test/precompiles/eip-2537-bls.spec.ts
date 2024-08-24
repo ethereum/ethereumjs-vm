@@ -82,7 +82,7 @@ for (const bls of [undefined, mclbls]) {
                 'return value should match testVectorResult',
               )
               assert.equal(result.executionGasUsed, BigInt(data.Gas))
-            } catch (e) {
+            } catch {
               assert.fail('The precompile should not throw')
             }
           }

@@ -46,7 +46,7 @@ async function fetchExecutionPayload(
     const beaconBlock = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/${slot}`)).json()
     beaconPayload = beaconBlock.data.message.body.execution_payload
     // eslint-disable-next-line no-empty
-  } catch (_e) {}
+  } catch {}
 
   return beaconPayload
 }

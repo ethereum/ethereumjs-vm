@@ -168,8 +168,8 @@ describe('reorg tests', () => {
       !signerVotes.find(
         (v: any) =>
           v[0] === BigInt(2) &&
-          v[1][0].equal(cliqueSigner(block1_low.header)) &&
-          v[1][1].equal(beneficiary1) &&
+          v[1][0].equal(cliqueSigner(block1_low.header)) === true &&
+          v[1][1].equal(beneficiary1) === true &&
           equalsBytes(v[1][2], CLIQUE_NONCE_AUTH),
       ),
       'should not find reorged clique vote',

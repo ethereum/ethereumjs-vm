@@ -470,7 +470,7 @@ export class Engine {
       if (!executedParentExists) {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
-    } catch (error: any) {
+    } catch {
       // Stash the block for a potential forced forkchoice update to it later.
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
@@ -621,7 +621,7 @@ export class Engine {
     try {
       // find parents till vmHead but limit lookups till engineParentLookupMaxDepth
       blocks = await recursivelyFindParents(vmHead.hash(), headBlock.header.parentHash, this.chain)
-    } catch (error) {
+    } catch {
       const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
       return response
     }
@@ -932,7 +932,7 @@ export class Engine {
         this.remoteBlocks.get(headBlockHash.slice(2)) ??
         (await this.skeleton.getBlockByHash(head, true)) ??
         (await this.chain.getBlock(head))
-    } catch (error) {
+    } catch {
       this.config.logger.debug(
         `Forkchoice announced head block unknown to EL hash=${short(headBlockHash)}`,
       )
@@ -1070,7 +1070,7 @@ export class Engine {
             headBlock.header.parentHash,
             this.chain,
           )
-        } catch (error) {
+        } catch {
           const payloadStatus = {
             status: Status.SYNCING,
             latestValidHash: null,

@@ -3,7 +3,10 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/esm",
-    "composite": true
+    "composite": true,
+    "paths": {
+      "@ethereumjs/rlp": ["../rlp/src/index.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "references": [{ "path": "../rlp/tsconfig.prod.esm.json" }]

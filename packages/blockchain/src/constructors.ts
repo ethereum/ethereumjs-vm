@@ -66,15 +66,15 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
 
   // load verified iterator heads
   const heads = await blockchain.dbManager.getHeads()
-  blockchain['_heads'] = heads !== undefined ? heads : {}
+  blockchain['_heads'] = heads ?? {}
 
   // load headerchain head
   let hash = await blockchain.dbManager.getHeadHeader()
-  blockchain['_headHeaderHash'] = hash !== undefined ? hash : genesisHash
+  blockchain['_headHeaderHash'] = hash ?? genesisHash
 
   // load blockchain head
   hash = await blockchain.dbManager.getHeadBlock()
-  blockchain['_headBlockHash'] = hash !== undefined ? hash : genesisHash
+  blockchain['_headBlockHash'] = hash ?? genesisHash
 
   if (blockchain['_hardforkByHeadBlockNumber']) {
     const latestHeader = await blockchain['_getHeader'](blockchain['_headHeaderHash'])

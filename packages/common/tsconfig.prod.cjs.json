@@ -3,7 +3,10 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/cjs",
-    "composite": true
+    "composite": true,
+    "paths": {
+      "@ethereumjs/util": ["../util/src/index.ts"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [{ "path": "../util/tsconfig.prod.cjs.json" }]

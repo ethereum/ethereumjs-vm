@@ -156,7 +156,7 @@ describe('RPC State Manager API tests', () => {
 
     try {
       await state.getAccount(createAddressFromString('0x9Cef824A8f4b3Dc6B7389933E52e47F010488Fc8'))
-    } catch (err) {
+    } catch {
       assert.ok(true, 'calls getAccountFromProvider for non-cached account')
     }
 

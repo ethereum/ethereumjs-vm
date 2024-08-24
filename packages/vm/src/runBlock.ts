@@ -503,7 +503,7 @@ export async function accumulateParentBlockHash(
       const emptyHistoryAcc = new Account(BigInt(1))
       await vm.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
     }
-  } catch (_e) {
+  } catch {
     const emptyHistoryAcc = new Account(BigInt(1))
     await vm.evm.journal.putAccount(historyAddress, emptyHistoryAcc)
   }
@@ -556,7 +556,7 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
     if ((await vm.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
       await vm.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
     }
-  } catch (_) {
+  } catch {
     await vm.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 

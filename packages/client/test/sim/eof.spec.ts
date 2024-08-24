@@ -148,7 +148,7 @@ describe('EOF ephemeral hardfork tests', async () => {
     try {
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
-    } catch (e) {
+    } catch {
       assert.fail('network not cleaned properly')
     }
   })

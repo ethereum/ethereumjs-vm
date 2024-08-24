@@ -90,7 +90,7 @@ describe('StateManager -> Storage', () => {
         try {
           await stateManager.putStorage(address, key, value)
           assert.fail('did not throw')
-        } catch (e: any) {
+        } catch {
           assert.ok(true, 'threw on trying to set storage values larger than 32 bytes')
         }
       })

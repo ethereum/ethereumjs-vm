@@ -21,7 +21,7 @@ describe('StateManager -> Code', () => {
           This test is mostly an example of why a code prefix is necessary
           I an address, we put two storage values. The preimage of the (storage trie) root hash is known
           This preimage is used as codeHash
-  
+
           NOTE: Currently, the only problem which this code prefix fixes, is putting 0x80 as contract code
           -> This hashes to the empty trie node hash (0x80 = RLP([])), so keccak256(0x80) = empty trie node hash
           -> Therefore, each empty state trie now points to 0x80, which is not a valid trie node, which crashes @ethereumjs/trie
@@ -160,7 +160,7 @@ describe('StateManager -> Code', () => {
         try {
           await stateManager.putCode(address, code)
           assert.fail('should throw')
-        } catch (e) {
+        } catch {
           assert.ok(true, 'successfully threw')
         }
       })

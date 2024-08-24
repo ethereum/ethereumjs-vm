@@ -158,7 +158,7 @@ describe('[Block]: block functions', () => {
     try {
       createBlockFromRLPSerializedBlock(blockRlp, { common })
       assert.ok(true, 'should pass')
-    } catch (error: any) {
+    } catch {
       assert.fail('should not throw')
     }
   })
@@ -169,7 +169,7 @@ describe('[Block]: block functions', () => {
     try {
       createBlockFromRPC(testDataFromRpcGoerli.default as JsonRpcBlock, [], { common })
       assert.ok(true, 'does not throw')
-    } catch (error: any) {
+    } catch {
       assert.fail('error thrown')
     }
   })

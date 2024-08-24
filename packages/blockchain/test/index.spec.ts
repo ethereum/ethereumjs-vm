@@ -78,7 +78,7 @@ describe('blockchain test', () => {
       await createBlockchain({ common, validateConsensus: true })
       const chain = await createBlockchain({ common, validateBlocks: true })
       assert.ok(chain instanceof Blockchain, 'should not throw')
-    } catch (error) {
+    } catch {
       assert.fail('show not have thrown')
     }
   })

@@ -210,6 +210,7 @@ export class Heap {
         fail = i
       }
     }
+    // eslint-disable-next-line no-console
     if (fail) console.log('failed at', fail >>> 1, fail)
     return !fail
   }

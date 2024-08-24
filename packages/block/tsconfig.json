@@ -1,4 +1,13 @@
 {
   "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "compilerOptions": {
+    "paths": {
+      "@ethereumjs/common": ["../common/src/index.ts"],
+      "@ethereumjs/rlp": ["../rlp/src/index.ts"],
+      "@ethereumjs/trie": ["../trie/src/index.ts"],
+      "@ethereumjs/tx": ["../tx/src/index.ts"],
+      "@ethereumjs/util": ["../util/src/index.ts"]
+    }
+  }
 }

@@ -58,7 +58,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
     try {
       await VM.create({ evmOpts: {}, evm: await createEVM() })
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch {
       assert.ok('correctly thrown')
     }
   })
@@ -199,7 +199,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     try {
       await VM.create({ common })
       assert.ok(true, 'did not throw')
-    } catch (error) {
+    } catch {
       assert.fail('should not have thrown')
     }
   })

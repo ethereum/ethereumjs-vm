@@ -40,7 +40,7 @@ export type RPCArgs = {
 function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
   let jwtSecret: Uint8Array
   const defaultJwtPath = `${config.datadir}/jwtsecret`
-  const usedJwtPath = jwtFilePath !== undefined ? jwtFilePath : defaultJwtPath
+  const usedJwtPath = jwtFilePath ?? defaultJwtPath
 
   // If jwtFilePath is provided, it should exist
   if (jwtFilePath !== undefined && !existsSync(jwtFilePath)) {

@@ -150,7 +150,7 @@ describe('[CLI]', () => {
           await client.request('engine_exchangeCapabilities', [], 2.0)
         } catch (e: any) {
           assert(
-            e.message.includes('Unauthorized: Error: Missing auth header'),
+            (e as Error).message.includes('Unauthorized: Error: Missing auth header'),
             'authentication failure shows that auth is defaulting to active',
           )
         }
