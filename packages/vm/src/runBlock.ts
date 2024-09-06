@@ -47,6 +47,7 @@ import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+import { FlatStateManager } from '@ethereumjs/statemanager'
 
 const debug = debugDefault('vm:block')
 
@@ -221,7 +222,10 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     debug(`block checkpoint committed`)
   }
 
-  const stateRoot = await stateManager.getStateRoot()
+  const stateRoot =
+    stateManager instanceof FlatStateManager
+      ? await stateManager.getStateRoot(true)
+      : await stateManager.getStateRoot()
 
   // Given the generate option, either set resulting header
   // values to the current block, or validate the resulting

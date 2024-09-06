@@ -100,5 +100,9 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "optionalDependencies": {
+    "abstract-level": "^1.0.3",
+    "memory-level": "^1.0.0"
   }
 }

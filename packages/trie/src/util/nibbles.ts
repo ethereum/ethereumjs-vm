@@ -1,5 +1,4 @@
 import { toBytes } from '@ethereumjs/util'
-
 import type { Nibbles } from '../types.js'
 
 /**

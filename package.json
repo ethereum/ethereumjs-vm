@@ -58,7 +58,7 @@
     "tsx": "^4.6.2",
     "typedoc": "^0.26.6",
     "typedoc-plugin-markdown": "^4.2.5",
-    "typescript": "5.0.4",
+    "typescript": "^5.0.4",
     "vite-plugin-node-polyfills": "^0.21.0",
     "vite-plugin-top-level-await": "^1.4.1",
     "vite-plugin-wasm": "^3.3.0",

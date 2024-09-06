@@ -44,6 +44,11 @@ export * from './bytes.js'
 export * from './types.js'
 
 /**
+ * Level wrapper
+ */
+export * from './level.js'
+
+/**
  * Export ethjs-util methods
  */
 export * from './asyncEventEmitter.js'

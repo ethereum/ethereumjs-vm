@@ -24,6 +24,8 @@ import type { ConsensusDict } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type * as tape from 'tape'
+import { FlatStateManager } from '@ethereumjs/statemanager'
+import { Snapshot } from '@ethereumjs/statemanager'
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -47,10 +49,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true, common })
-  let stateManager = new DefaultStateManager({
-    caches: new Caches(),
-    trie: state,
+  // let state = new Trie({ useKeyHashing: true, common })
+  // let stateManager = new DefaultStateManager({
+  //   caches: new Caches(),
+  //   trie: state,
+  //   common,
+  // })
+  let state = new Snapshot()
+  let stateManager = new FlatStateManager({
+    snapshot: state,
     common,
   })
 
@@ -109,8 +116,13 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
+  const sm = vm.stateManager
+  const root =
+    sm instanceof FlatStateManager ? await sm.getStateRoot(true) : await sm.getStateRoot()
+
   t.deepEquals(
-    await vm.stateManager.getStateRoot(),
+    // await vm.stateManager.getStateRoot(),
+    root,
     genesisBlock.header.stateRoot,
     'correct pre stateRoot',
   )
@@ -201,11 +213,11 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       //vm.common.genesis().stateRoot = await vm.stateManager.getStateRoot()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
-          const parentBlock = await blockchain!.getBlock(block.header.parentHash)
-          const parentState = parentBlock.header.stateRoot
+          // const parentBlock = await blockchain!.getBlock(block.header.parentHash)
+          // const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await runBlock(vm, { block, root: parentState })
+            await runBlock(vm, { block })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
@@ -222,6 +234,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
+          // console.log('dbg100')
+          // console.log(bytesToHex(headBlock.header.stateRoot))
           await vm.stateManager.setStateRoot(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
@@ -237,6 +251,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     } catch (error: any) {
       // caught an error, reduce block number
       currentBlock--
+      // console.log('dbg100')
+      // console.log(error.stack)
       await handleError(error, expectException)
     }
   }

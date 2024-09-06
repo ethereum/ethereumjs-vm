@@ -15,6 +15,8 @@ import { createVM, runTx } from '../../../src/index.js'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
 
 import type * as tape from 'tape'
+import { Snapshot } from '@ethereumjs/statemanager'
+import { FlatStateManager } from '@ethereumjs/statemanager'
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -79,10 +81,15 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
   const blockchain = await createBlockchain({ genesisBlock, common })
-  const state = new Trie({ useKeyHashing: true, common })
-  const stateManager = new DefaultStateManager({
-    caches: new Caches(),
-    trie: state,
+  // const state = new Trie({ useKeyHashing: true, common })
+  // const stateManager = new DefaultStateManager({
+  //   caches: new Caches(),
+  //   trie: state,
+  //   common,
+  // })
+  const state = new Snapshot()
+  const stateManager = new FlatStateManager({
+    snapshot: state,
     common,
   })
 
