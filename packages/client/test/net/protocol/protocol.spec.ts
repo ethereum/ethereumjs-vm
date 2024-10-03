@@ -81,7 +81,10 @@ describe('[Protocol]', () => {
     }, 101)
     try {
       await p.handshake(sender)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(/timed out/.test(e.message), 'got timeout error')
     }
   })

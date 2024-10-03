@@ -86,7 +86,10 @@ describe('TransactionTests', async () => {
                 `Transaction should be valid on ${forkName}`,
               )
             }
-          } catch (e: any) {
+          } catch (e) {
+            if (!(e instanceof Error)) {
+              e = new Error(e)
+            }
             if (shouldBeInvalid) {
               assert.ok(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
             } else {

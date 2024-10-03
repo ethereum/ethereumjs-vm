@@ -32,7 +32,10 @@ describe('[Blockchain]: Block validation tests', () => {
     try {
       await blockchain.putBlock(block3)
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('uncle is already included'),
         'block throws if uncle is already included',
@@ -59,7 +62,10 @@ describe('[Blockchain]: Block validation tests', () => {
       await blockchain.putBlock(block3)
 
       assert.fail('cannot reach this')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('not found in DB'),
         'block throws if uncle parent hash is not part of the canonical chain',
@@ -92,7 +98,10 @@ describe('[Blockchain]: Block validation tests', () => {
     try {
       await blockchain.putBlock(blockWithUnclesTooOld)
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('uncle block has a parent that is too old'),
         'block throws uncle is too old',
@@ -114,7 +123,10 @@ describe('[Blockchain]: Block validation tests', () => {
     try {
       await blockchain.putBlock(block1)
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('uncle block has a parent that is too old or too young'),
         'block throws uncle is too young',
@@ -150,7 +162,10 @@ describe('[Blockchain]: Block validation tests', () => {
     try {
       await blockchain.putBlock(block2)
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('invalid difficulty block header number=1 '),
         'block throws when uncle header is invalid',
@@ -173,7 +188,10 @@ describe('[Blockchain]: Block validation tests', () => {
       await blockchain.putBlock(block2)
 
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('The uncle is a canonical block'),
         'block throws if an uncle is a canonical block',
@@ -257,7 +275,10 @@ describe('[Blockchain]: Block validation tests', () => {
       )
       const block2 = createBlock({ header }, { common })
       await blockchain.putBlock(block2)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       const expectedError = 'Invalid block: base fee not correct'
       assert.ok(
         (e.message as string).includes(expectedError),

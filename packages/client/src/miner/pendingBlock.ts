@@ -346,7 +346,10 @@ export class PendingBlock {
         skipHardForkValidation: this.skipHardForkValidation,
       })
       addTxResult = AddTxResult.Success
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
         if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
           // If block has less than 21000 gas remaining, consider it full
@@ -355,7 +358,7 @@ export class PendingBlock {
         } else {
           addTxResult = AddTxResult.SkippedByGasLimit
         }
-      } else if ((error as Error).message.includes('blobs missing')) {
+      } else if (error.message.includes('blobs missing') === true) {
         // Remove the blob tx which doesn't has blobs bundled
         this.txPool.removeByHash(bytesToHex(tx.hash()), tx)
         this.config.logger.error(

@@ -181,7 +181,10 @@ describe('EIP-7002 tests', () => {
         skipBlockValidation: true,
         generate: true,
       })
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(e.message.includes('Attempt to accumulate EIP-7002 requests failed'))
     }
   })

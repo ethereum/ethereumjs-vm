@@ -158,7 +158,10 @@ async function run(data: any) {
         await sleep(1000)
       }
     }
-  } catch (error: any) {
+  } catch (error) {
+    if (!(error instanceof Error)) {
+      error = new Error(error)
+    }
     console.log(error)
     console.log(`Error retrieving blocks from ${error.config.url}: ${error.response.data}`)
     return false

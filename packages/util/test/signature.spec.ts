@@ -169,7 +169,10 @@ describe('hashPersonalMessage', () => {
   it('should throw if input is not a Uint8Array', () => {
     try {
       hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Uint8Array)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('This method only supports Uint8Array'))
     }
   })

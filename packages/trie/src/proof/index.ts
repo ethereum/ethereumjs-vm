@@ -27,7 +27,10 @@ export async function verifyMPTProof(
     const proofTrie = await createTrieFromProof(proof, opts)
     const value = await proofTrie.get(key, true)
     return value
-  } catch (err: any) {
+  } catch (err) {
+    if (!(err instanceof Error)) {
+      err = new Error(err)
+    }
     throw new Error('Invalid proof provided')
   }
 }
@@ -149,7 +152,10 @@ export async function verifyMerkleProof(
   })
   try {
     await updateTrieFromMerkleProof(proofTrie, proof, true)
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     throw new Error('Invalid proof nodes given')
   }
   try {
@@ -160,7 +166,10 @@ export async function verifyMerkleProof(
     const value = await proofTrie.get(trie['appliedKey'](key), true)
     trie['DEBUG'] && trie['debug'](`PROOF VERIFIED`, ['VERIFY_PROOF'])
     return value
-  } catch (err: any) {
+  } catch (err) {
+    if (!(err instanceof Error)) {
+      err = new Error(err)
+    }
     if (err.message === 'Missing node in DB') {
       throw new Error('Invalid proof provided')
     } else {

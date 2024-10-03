@@ -417,7 +417,10 @@ export function createPartialAccountFromRLP(serialized: Uint8Array) {
 export const isValidAddress = function (hexAddress: string): hexAddress is PrefixedHexString {
   try {
     assertIsString(hexAddress)
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     return false
   }
 
@@ -621,7 +624,10 @@ export const zeroAddress = function (): PrefixedHexString {
 export const isZeroAddress = function (hexAddress: string): boolean {
   try {
     assertIsString(hexAddress)
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     return false
   }
 

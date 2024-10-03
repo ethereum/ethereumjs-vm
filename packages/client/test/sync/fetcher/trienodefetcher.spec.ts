@@ -184,7 +184,10 @@ describe('[TrieNodeFetcher]', async () => {
     try {
       await fetcher.store(undefined as any)
       assert.ok('should run without error')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.fail(err.message)
     }
   })

@@ -141,7 +141,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       const blockRlp = hexToBytes(raw.rlp as PrefixedHexString)
       const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
       currentBlock = bytesToBigInt(decodedRLP[0][8])
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       await handleError(e, expectException)
       continue
     }
@@ -179,7 +182,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
             if (shouldFail) {
               t.fail('tx should fail, but did not fail')
             }
-          } catch (e: any) {
+          } catch (e) {
+            if (!(e instanceof Error)) {
+              e = new Error(e)
+            }
             if (!shouldFail) {
               t.fail(`tx should not fail, but failed: ${e.message}`)
             } else {
@@ -207,13 +213,19 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           try {
             await runBlock(vm, { block, root: parentState, setHardfork: true })
             // set as new head block
-          } catch (error: any) {
+          } catch (error) {
+            if (!(error instanceof Error)) {
+              error = new Error(error)
+            }
             // remove invalid block
             await blockchain!.delBlock(block.header.hash())
             throw error
           }
         })
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         // if the test fails, then block.header is the prev because
         // vm.runBlock has a check that prevents the actual postState from being
         // imported if it is not equal to the expected postState. it is useful
@@ -234,7 +246,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         t.fail(`expected exception but test did not throw an exception: ${expectException}`)
         return
       }
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       // caught an error, reduce block number
       currentBlock--
       await handleError(error, expectException)

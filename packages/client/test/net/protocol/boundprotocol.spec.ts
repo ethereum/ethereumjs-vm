@@ -127,7 +127,10 @@ describe('[BoundProtocol]', () => {
     td.when(protocol.decode(testResponse, '2')).thenThrow(new Error('error1'))
     try {
       await bound.request('TestMessage', 1)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(/error1/.test(err.message), 'got error')
     }
   })
@@ -143,7 +146,10 @@ describe('[BoundProtocol]', () => {
     })
     try {
       await bound.request('TestMessage', {})
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(/timed out/.test(err.message), 'got error')
     }
   })

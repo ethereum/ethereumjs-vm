@@ -190,7 +190,10 @@ describe('[BaseTransaction]', () => {
     try {
       createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when nonce has leading zeroes')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('nonce cannot have leading zeroes'),
         'should throw with nonce with leading zeroes',
@@ -201,7 +204,10 @@ describe('[BaseTransaction]', () => {
     try {
       createLegacyTxFromBytesArray(rlpData)
       assert.fail('should have thrown when v has leading zeroes')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('v cannot have leading zeroes'),
         'should throw with v with leading zeroes',
@@ -212,7 +218,10 @@ describe('[BaseTransaction]', () => {
     try {
       createAccessList2930TxFromBytesArray(rlpData)
       assert.fail('should have thrown when gasLimit has leading zeroes')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('gasLimit cannot have leading zeroes'),
         'should throw with gasLimit with leading zeroes',
@@ -223,7 +232,10 @@ describe('[BaseTransaction]', () => {
     try {
       create1559FeeMarketTxFromBytesArray(rlpData)
       assert.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('maxPriorityFeePerGas cannot have leading zeroes'),
         'should throw with maxPriorityFeePerGas with leading zeroes',
@@ -438,7 +450,10 @@ describe('[BaseTransaction]', () => {
     const tx = createFeeMarket1559Tx(eip1559Txs[0])
     try {
       ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER }, 256, true)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('equal or exceed MAX_INTEGER'),
         'throws when value equals or exceeds MAX_INTEGER',
@@ -446,12 +461,18 @@ describe('[BaseTransaction]', () => {
     }
     try {
       ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_INTEGER + BigInt(1) }, 256, false)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('exceed MAX_INTEGER'), 'throws when value exceeds MAX_INTEGER')
     }
     try {
       ;(tx as any)._validateCannotExceedMaxInteger({ a: BigInt(0) }, 100, false)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('unimplemented bits value'),
         'throws when bits value other than 64 or 256 provided',
@@ -459,12 +480,18 @@ describe('[BaseTransaction]', () => {
     }
     try {
       ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64 + BigInt(1) }, 64, false)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('2^64'), 'throws when 64 bit integer exceeds MAX_UINT64')
     }
     try {
       ;(tx as any)._validateCannotExceedMaxInteger({ a: MAX_UINT64 }, 64, true)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('2^64'),
         'throws when 64 bit integer equals or exceeds MAX_UINT64',

@@ -104,7 +104,10 @@ export class Libp2pPeer extends Peer {
         try {
           const { stream } = await node.dialProtocol(peer as any, protocol)
           await this.bindProtocol(p, new Libp2pSender(stream))
-        } catch (err: any) {
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            err = new Error(err)
+          }
           const peerInfo = isPeerId(peer) ? `id=${peer.toB58String()}` : `multiaddr=${peer}`
           this.config.logger.debug(
             `Peer doesn't support protocol=${protocol} ${peerInfo} ${err.stack}`,

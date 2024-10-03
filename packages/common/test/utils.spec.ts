@@ -70,7 +70,10 @@ describe('[Utils/Parse]', () => {
     try {
       createCommonFromGethGenesis(mergeAtGenesisData, {})
       assert.fail('should have thrown')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('nonzero terminal total difficulty'))
     }
   })

@@ -82,7 +82,10 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     try {
       await stateManager.getAccount(address)
       assert.fail('should throw on getting account that is not found in witness')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.equal(
         e.message.slice(0, 25),
         'No witness bundled for ad',

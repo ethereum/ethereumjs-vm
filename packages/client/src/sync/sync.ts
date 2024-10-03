@@ -132,7 +132,10 @@ export abstract class Synchronizer {
     while (this.running && !this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       try {
         await this.sync()
-      } catch (error: any) {
+      } catch (error) {
+        if (!(error instanceof Error)) {
+          error = new Error(error)
+        }
         this.config.events.emit(Event.SYNC_ERROR, error)
       }
       await wait(this.interval)
@@ -159,7 +162,10 @@ export abstract class Synchronizer {
       }
       this.config.logger.debug(`Fetcher finished fetching...`)
       return this.resolveSync()
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       this.config.logger.error(
         `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`,
       )

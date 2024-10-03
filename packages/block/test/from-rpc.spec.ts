@@ -224,7 +224,10 @@ describe('[fromJSONRPCProvider]', () => {
     try {
       await createBlockFromJSONRPCProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('No block data returned from provider'),
         'returned correct error message',

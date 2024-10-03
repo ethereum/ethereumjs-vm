@@ -59,7 +59,10 @@ describe('fetchFromProvider', () => {
         params: ['0xabcd'],
       })
       assert.fail('should throw')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('fetch'), 'tried to fetch and failed')
     }
   })
@@ -79,7 +82,10 @@ describe('fetchFromProvider', () => {
         params: ['0xabcd'],
       })
       assert.fail('should throw')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('ERROR'), 'received a formatted RPC error')
       assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
     }
@@ -101,7 +107,10 @@ describe('fetchFromProvider', () => {
         params: ['0xabcd'],
       })
       assert.fail('should throw')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('Could not parse error'), 'received a formatted RPC error')
       assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
     }

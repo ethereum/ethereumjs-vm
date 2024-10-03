@@ -172,7 +172,10 @@ export class MerklePatriciaTrie {
     try {
       const value = await this.lookupNode(root)
       return value !== null
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (error.message === 'Missing node in DB') {
         return equalsBytes(root, this.EMPTY_TRIE_ROOT)
       } else {
@@ -418,7 +421,10 @@ export class MerklePatriciaTrie {
           ['find_path'],
         )
       await this.walkTrie(start, onFound)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (error.message !== 'Missing node in DB' || throwIfMissing) {
         throw error
       }

@@ -349,7 +349,7 @@ export class Debug {
     try {
       // Validator already verified that `blockHash` is properly formatted.
       block = await this.chain.getBlock(hexToBytes(blockHash))
-    } catch (err: any) {
+    } catch {
       throw {
         code: INTERNAL_ERROR,
         message: 'Could not get requested block hash.',

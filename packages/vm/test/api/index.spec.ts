@@ -57,7 +57,10 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
     try {
       await createVM({ evmOpts: {}, evm: await createEVM() })
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok('correctly thrown')
     }
   })
@@ -124,7 +127,10 @@ describe('VM -> supportedHardforks', () => {
     try {
       await createVM({ common })
       assert.fail('should have failed for unsupported hardfork')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(e.message.includes('supportedHardforks'))
     }
     // restore supported hardforks
@@ -188,7 +194,10 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
       common = new Common({ chain: Mainnet, hardfork: 'extraCheese' })
       vm = await createVM({ common })
       assert.fail('should have failed for invalid chain')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(e.message.includes('not supported'))
     }
   })

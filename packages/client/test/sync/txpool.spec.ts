@@ -142,7 +142,10 @@ const handleTxs = async (
     pool.stop()
     pool.close()
     return true
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     pool.stop()
     pool.close()
 
@@ -420,7 +423,10 @@ describe('[TxPool]', async () => {
     try {
       await pool.add(txA02_Underpriced)
       assert.fail('should fail adding underpriced txn to txpool')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('replacement gas too low'),
         'successfully failed adding underpriced txn',

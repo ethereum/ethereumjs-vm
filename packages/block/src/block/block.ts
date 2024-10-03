@@ -610,13 +610,13 @@ export class Block {
     let hash = ''
     try {
       hash = bytesToHex(this.hash())
-    } catch (e: any) {
+    } catch {
       hash = 'error'
     }
     let hf = ''
     try {
       hf = this.common.hardfork()
-    } catch (e: any) {
+    } catch {
       hf = 'error'
     }
     let errorStr = `block number=${this.header.number} hash=${hash} `

@@ -100,7 +100,10 @@ export class TransitionTool {
         // Set `allowNoBlobs` to `true`, since the test might not have the blob
         // The 4844-tx at this should still be valid, since it has the `blobHashes` field
         await builder.addTransaction(tx, { allowNoBlobs: true })
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         this.rejected.push({
           index,
           error: e.message,

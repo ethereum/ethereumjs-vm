@@ -16,7 +16,10 @@ describe('ENR tests', () => {
   it('ENR (root): should error if DNS root entry is mis-prefixed', () => {
     try {
       ENR.parseAndVerifyRoot(dns.enrRootBadPrefix, dns.publicKey)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.toString().includes("ENR root entry must start with 'enrtree-root:'"),
         'has correct error message',
@@ -27,7 +30,10 @@ describe('ENR tests', () => {
   it('ENR (root): should error if DNS root entry signature is invalid', () => {
     try {
       ENR.parseAndVerifyRoot(dns.enrRootBadSig, dns.publicKey)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.toString().includes('Unable to verify ENR root signature'),
         'has correct error message',
@@ -38,7 +44,10 @@ describe('ENR tests', () => {
   it('ENR (root): should error if DNS root entry is malformed', () => {
     try {
       ENR.parseAndVerifyRoot(dns.enrRootMalformed, dns.publicKey)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.toString().includes("Could not parse 'l' value from ENR root entry"),
         'has correct error message',
@@ -57,7 +66,10 @@ describe('ENR tests', () => {
   it('ENR (tree): should error if DNS tree entry is mis-prefixed', () => {
     try {
       ENR.parseTree(dns.enrTreeBadPrefix)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.toString().includes("ENR tree entry must start with 'enrtree:'"),
         'has correct error message',
@@ -68,7 +80,10 @@ describe('ENR tests', () => {
   it('ENR (tree): should error if DNS tree entry is misformatted', () => {
     try {
       ENR.parseTree(dns.enrTreeMalformed)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.toString().includes('Could not parse domain from ENR tree entry'),
         'has correct error message',
@@ -93,7 +108,10 @@ describe('ENR tests', () => {
   it('ENR (branch): should error if DNS branch entry is mis-prefixed', () => {
     try {
       ENR.parseBranch(dns.enrBranchBadPrefix)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.toString().includes("ENR branch entry must start with 'enrtree-branch:'"),
         'has correct error message',
@@ -120,7 +138,10 @@ describe('ENR tests', () => {
   it('ENR (enr): should error if record mis-prefixed', () => {
     try {
       ENR.parseAndVerifyRecord(dns.enrBadPrefix)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.toString().includes("String encoded ENR must start with 'enr:'"),
         'has correct error message',

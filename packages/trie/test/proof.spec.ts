@@ -51,7 +51,10 @@ describe('simple merkle proofs generation and verification', () => {
     try {
       await verifyMPTProof(utf8ToBytes('key1aa'), proof)
       assert.fail('expected error: Invalid proof provided')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.equal(e.message, 'Invalid proof provided')
     }
 
@@ -61,7 +64,10 @@ describe('simple merkle proofs generation and verification', () => {
     try {
       await verifyMPTProof(utf8ToBytes('key2bb'), proof)
       assert.fail('expected error: Invalid proof provided')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.equal(e.message, 'Invalid proof provided')
     }
 
@@ -76,7 +82,10 @@ describe('simple merkle proofs generation and verification', () => {
     try {
       await createTrieFromProof(proof, { root: trie.root() })
       assert.fail(`expected error: 'The provided proof does not have the expected trie root'`)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.equal(e.message, 'The provided proof does not have the expected trie root')
     }
   })

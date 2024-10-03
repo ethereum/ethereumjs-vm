@@ -554,7 +554,7 @@ async function executeBlocks(client: EthereumClient) {
     if ((blockRange[0][1] as string[]).length > 0 && blockRange.length === 2) {
       throw new Error('wrong input')
     }
-  } catch (e: any) {
+  } catch {
     client.config.logger.error(
       'Wrong input format for block execution, allowed format types: 5, 5-10, 5[0xba4b5fd92a26badad3cad22eb6f7c7e745053739b5f5d1e8a3afb00f8fb2a280,[TX_HASH_2],...], 5[*] (all txs in verbose mode)',
     )
@@ -580,7 +580,10 @@ async function startBlock(client: EthereumClient) {
   try {
     await client.chain.resetCanonicalHead(startBlock)
     logger.info(`Chain height reset to ${client.chain.headers.height}`)
-  } catch (err: any) {
+  } catch (err) {
+    if (!(err instanceof Error)) {
+      err = new Error(err)
+    }
     logger.error(`Error setting back chain in startBlock: ${err}`)
     process.exit()
   }
@@ -616,7 +619,10 @@ async function startExecutionFrom(client: EthereumClient) {
       logger.info(
         `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
       )
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       logger.error(`Error setting vmHead for starting stateless execution: ${err}`)
       process.exit()
     }
@@ -691,7 +697,10 @@ async function startClient(
               block.header.number
             }`,
           )
-        } catch (err: any) {
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            err = new Error(err)
+          }
           config.logger.info(
             `Encountered error while while preloading chain data  error=${err.message}`,
           )
@@ -857,7 +866,10 @@ async function inputAccounts() {
       const derivedAddress = createAddressFromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     console.error(`Encountered error unlocking account:\n${e.message}`)
     process.exit()
   }
@@ -1019,7 +1031,10 @@ async function run() {
       common = createCustomCommon(customChainParams, Mainnet, {
         customCrypto: cryptoFunctions,
       })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       console.error(err)
       console.error(`invalid chain parameters: ${err.message}`)
       process.exit()

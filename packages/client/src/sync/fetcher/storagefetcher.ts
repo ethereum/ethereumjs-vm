@@ -172,7 +172,10 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         origin = bigIntToBytes(first + BIGINT_1)
       }
       return setLengthLeft(origin, 32)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       this.DEBUG && this.debug(e)
     }
     return new Uint8Array(0)

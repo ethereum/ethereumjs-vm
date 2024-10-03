@@ -213,7 +213,10 @@ for (const { constructor, defaults, title } of [
       try {
         await emptyTrie.checkRoot(ROOT_DB_KEY)
         assert.fail('Should throw')
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         assert.notEqual(
           'Missing node in DB',
           e.message,

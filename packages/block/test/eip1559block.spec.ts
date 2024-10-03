@@ -72,7 +72,10 @@ describe('EIP1559 tests', () => {
         },
       )
       assert.fail('should throw when baseFeePerGas is not set to initial base fee')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       const expectedError = 'Initial EIP1559 block does not have initial base fee'
       assert.ok(
         e.message.includes(expectedError),
@@ -96,7 +99,10 @@ describe('EIP1559 tests', () => {
       )
       ;(header as any).baseFeePerGas = undefined
       await (header as any)._genericFormatValidation()
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       const expectedError = 'EIP1559 block has no base fee field'
       assert.ok(
         e.message.includes(expectedError),
@@ -141,7 +147,10 @@ describe('EIP1559 tests', () => {
         },
       )
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(e.message.includes('base fee'), 'should throw on wrong initial base fee')
     }
   })
@@ -199,7 +208,10 @@ describe('EIP1559 tests', () => {
         },
       )
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(e.message.includes('too much gas used'), 'should throw when elasticity is exceeded')
     }
   })
@@ -325,7 +337,10 @@ describe('EIP1559 tests', () => {
     try {
       header.validateGasLimit(genesis.header)
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('gas limit increased too much'),
         'should throw if gas limit is increased too much (HF transition block)',
@@ -349,7 +364,10 @@ describe('EIP1559 tests', () => {
     try {
       header.validateGasLimit(block1.header)
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('gas limit increased too much'),
         'should throw if gas limit is increased too much (post-HF transition block)',
@@ -375,7 +393,10 @@ describe('EIP1559 tests', () => {
     try {
       header.validateGasLimit(genesis.header)
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('gas limit decreased too much'),
         'should throw if gas limit is decreased too much (HF transition block)',
@@ -399,7 +420,10 @@ describe('EIP1559 tests', () => {
     try {
       header.validateGasLimit(block1.header)
       assert.fail('should throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('gas limit decreased too much'),
         'should throw if gas limit is decreased too much (post-HF transition block)',

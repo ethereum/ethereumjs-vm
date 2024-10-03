@@ -56,7 +56,10 @@ describe('[Skeleton]/ startup scenarios ', () => {
     try {
       await skeleton.reset()
       assert.fail('should have thrown')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('skeleton reset'), 'throws when skeleton sync not started')
     }
     await skeleton.open()
@@ -366,7 +369,10 @@ describe('[Skeleton] / setHead', async () => {
         } else {
           assert.ok(true, `test ${testCaseIndex}: successfully passed`)
         }
-      } catch (error: any) {
+      } catch (error) {
+        if (!(error instanceof Error)) {
+          error = new Error(error)
+        }
         if (
           typeof testCase.err?.message === 'string' &&
           (error.message as string).includes(testCase.err.message)
@@ -867,7 +873,10 @@ describe('[Skeleton] / setHead', async () => {
     )
     try {
       await skeleton.setHead(block5, false)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (error !== errReorgDenied) {
         assert.fail(error)
       }
@@ -882,7 +891,10 @@ describe('[Skeleton] / setHead', async () => {
     await skeleton.initSync(block4PoS)
     try {
       await skeleton.putBlocks([block3PoS])
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (error !== errSyncMerged) {
         assert.fail(error)
       }

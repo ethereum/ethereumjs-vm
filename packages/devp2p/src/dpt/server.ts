@@ -54,7 +54,10 @@ export class Server {
       this._socket.on('message', (msg: Uint8Array, rinfo: RemoteInfo) => {
         try {
           this._handler(msg, rinfo)
-        } catch (err: any) {
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            err = new Error(err)
+          }
           this.events.emit('error', err)
         }
       })

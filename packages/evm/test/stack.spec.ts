@@ -134,7 +134,10 @@ describe('Stack', () => {
       const res = await evm.runCall(runCallArgs)
       const executionReturnValue = res.execResult.returnValue
       assert.deepEqual(executionReturnValue, expectedReturnValue)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.fail(e.message)
     }
   })

@@ -272,7 +272,10 @@ describe('runTx() -> API parameter usage/data errors', () => {
       await runTx(vm, { tx, skipHardForkValidation: true })
       // TODO uncomment:
       // assert.fail('should throw error')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('(EIP-2718) not activated'),
         `should fail for ${TRANSACTION_TYPES[1].name}`,
@@ -322,7 +325,10 @@ describe('runTx() -> API parameter usage/data errors', () => {
       try {
         await runTx(vm, { tx })
         assert.fail('should throw error')
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         assert.ok(
           e.message.includes('not signed') === true ||
             e.message.includes('Invalid Signature') === true,
@@ -338,7 +344,10 @@ describe('runTx() -> API parameter usage/data errors', () => {
       const tx = getTransaction(vm.common, txType.type, true)
       try {
         await runTx(vm, { tx })
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         assert.ok(
           e.message.toLowerCase().includes('enough funds'),
           `should fail for ${txType.name}`,
@@ -360,7 +369,10 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx })
       assert.fail('should throw error')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.toLowerCase().includes('max cost'),
         `should fail if max cost exceeds balance`,
@@ -387,7 +399,10 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx: tx2 })
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(true, 'successfully threw on insufficient balance for transaction')
     }
   })
@@ -404,7 +419,10 @@ describe('runTx() -> API parameter usage/data errors', () => {
     try {
       await runTx(vm, { tx })
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(true, 'successfully threw on wrong nonces')
     }
   })
@@ -419,7 +437,10 @@ describe('runTx() -> API parameter usage/data errors', () => {
       try {
         await runTx(vm, { tx, block })
         assert.fail('should fail')
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         assert.ok(
           e.message.includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error',
@@ -725,7 +746,10 @@ describe('runTx() -> RunTxOptions', () => {
             skipBalance,
           })
           assert.fail('should not accept a negative call value')
-        } catch (err: any) {
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            err = new Error(err)
+          }
           assert.ok(
             err.message.includes('value field cannot be negative'),
             'throws on negative call value',

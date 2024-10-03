@@ -27,7 +27,10 @@ describe('JSON-RPC call', () => {
     try {
       await rpc.request(req, [])
       assert.fail('should error when request not authenticated by JWT')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(err.code, 401, 'unauthorized request')
     }
   })
@@ -44,7 +47,10 @@ describe('JSON-RPC call', () => {
     try {
       await rpc.request(req, [])
       assert.fail('should have thrown an error')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(err.code, 401, 'errored with invalid token')
     }
   })
@@ -63,7 +69,10 @@ describe('JSON-RPC call', () => {
     try {
       await rpc.request(req, [])
       assert.fail('should have thrown an error')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(err.code, 401, 'errored with invalid token')
       assert.equal(err.message, 'Unauthorized: Error: Signature verification failed')
     }
@@ -104,7 +113,10 @@ describe('JSON-RPC call', () => {
     try {
       await rpc.request(req, [])
       assert.fail('should have thrown an error')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(err.code, 401, 'errored with valid but stale token')
       assert.ok(err.message.includes('Stale jwt'), 'valid but stale token')
     }
@@ -141,7 +153,10 @@ describe('JSON-RPC call', () => {
     try {
       await rpc.request('protected_METHOD_DOES_NOT_EXIST', ['0x1', true])
       assert.fail('should have thrown')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(err.code, 401, 'errored with unauthorized')
       assert.ok(err.message.includes('Missing auth header'), 'no auth token provided')
     }

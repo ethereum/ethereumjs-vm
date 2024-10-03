@@ -147,7 +147,10 @@ describe('[Block]: block functions', () => {
     try {
       createBlockFromRLP(blockRlp, { common })
       assert.ok(true, 'should pass')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.fail('should not throw')
     }
   })
@@ -158,7 +161,10 @@ describe('[Block]: block functions', () => {
     try {
       createBlockFromRPC(testdataFromRPCGoerliData, [], { common })
       assert.ok(true, 'does not throw')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.fail('error thrown')
     }
   })
@@ -177,7 +183,10 @@ describe('[Block]: block functions', () => {
     try {
       await block.validateData()
       assert.fail('should throw')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok((error.message as string).includes('invalid transaction trie'))
     }
   })
@@ -198,7 +207,10 @@ describe('[Block]: block functions', () => {
     try {
       await block.validateData()
       assert.fail('should throw')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok((error.message as string).includes('unsigned'))
     }
   })
@@ -230,7 +242,10 @@ describe('[Block]: block functions', () => {
     try {
       await block.validateData()
       assert.fail('should throw')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok((error.message as string).includes('invalid uncle hash'))
     }
   })
@@ -253,7 +268,10 @@ describe('[Block]: block functions', () => {
       try {
         await fn
         assert.fail('should throw')
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         assert.ok((e.message as string).includes(errorMsg))
       }
     }

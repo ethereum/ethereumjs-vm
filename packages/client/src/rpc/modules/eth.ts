@@ -819,7 +819,10 @@ export class Eth {
 
       const tx = block.transactions[txIndex]
       return toJSONRPCTx(tx, block, txIndex)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       throw {
         code: INVALID_PARAMS,
         message: error.message.toString(),
@@ -844,7 +847,10 @@ export class Eth {
 
       const tx = block.transactions[txIndex]
       return toJSONRPCTx(tx, block, txIndex)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       throw {
         code: INVALID_PARAMS,
         message: error.message.toString(),
@@ -1070,7 +1076,7 @@ export class Eth {
     if (blockHash !== undefined) {
       try {
         from = to = await this._chain.getBlock(hexToBytes(blockHash))
-      } catch (error: any) {
+      } catch {
         throw {
           code: INVALID_PARAMS,
           message: 'unknown blockHash',
@@ -1189,7 +1195,10 @@ export class Eth {
       } else {
         tx = createTxFromRLP(txBuf, { common })
       }
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       throw {
         code: PARSE_ERROR,
         message: `serialized tx data could not be parsed (${e.message})`,
@@ -1209,7 +1218,10 @@ export class Eth {
     try {
       await txPool.add(tx, true)
       txPool.sendNewTxHashes([[tx.type], [tx.serialize().byteLength], [tx.hash()]], pool.peers)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       throw {
         code: INVALID_PARAMS,
         message: error.message ?? error.toString(),

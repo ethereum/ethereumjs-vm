@@ -238,7 +238,10 @@ export function parseGethGenesis(json: any, name?: string) {
       finalJSON.name = name
     }
     return parseGethParams(finalJSON)
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }
 }

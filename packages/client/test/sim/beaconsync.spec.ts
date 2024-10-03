@@ -76,7 +76,10 @@ describe('simple mainnet test run', async () => {
     try {
       await waitForELStart(client)
       assert.ok(true, 'geth<>lodestar started successfully')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.fail(e.message + ': geth<>lodestar failed to start')
     }
   }, 60000)

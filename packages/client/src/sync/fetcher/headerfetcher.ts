@@ -96,7 +96,10 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
           } last=${headers[headers.length - 1]?.number})`,
         )
       this.config.events.emit(Event.SYNC_FETCHED_HEADERS, headers.slice(0, num))
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       this.DEBUG &&
         this.debug(
           `Error storing fetcher results in blockchain (headers num=${headers.length} first=${

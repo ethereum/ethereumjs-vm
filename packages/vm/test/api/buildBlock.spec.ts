@@ -81,7 +81,10 @@ describe('BlockBuilder', () => {
     try {
       await blockBuilder.addTransaction(tx)
       assert.fail('should throw error')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (
         (error.message as string).includes(
           'tx has a higher gas limit than the remaining gas in the block',
@@ -268,7 +271,10 @@ describe('BlockBuilder', () => {
         'reverted',
         'block should be in reverted status',
       )
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.fail('should not throw')
     }
 
@@ -289,7 +295,10 @@ describe('BlockBuilder', () => {
         'reverted',
         'block should be in reverted status',
       )
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.fail('should not throw')
     }
   })
@@ -350,7 +359,10 @@ describe('BlockBuilder', () => {
       try {
         await blockBuilder.addTransaction(tx)
         assert.fail('should throw error')
-      } catch (error: any) {
+      } catch (error) {
+        if (!(error instanceof Error)) {
+          error = new Error(error)
+        }
         assert.ok(
           (error.message as string).includes("is less than the block's baseFeePerGas"),
           'should fail with appropriate error',

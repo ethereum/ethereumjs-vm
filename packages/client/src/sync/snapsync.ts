@@ -111,7 +111,10 @@ export class SnapSynchronizer extends Synchronizer {
     }, this.interval * 30)
     try {
       await this.sync()
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       this.config.logger.error(`Snap sync error: ${error.message}`)
       this.config.events.emit(Event.SYNC_ERROR, error)
     }

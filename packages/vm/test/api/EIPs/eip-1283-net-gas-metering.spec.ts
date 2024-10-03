@@ -58,7 +58,10 @@ describe('Constantinople: EIP-1283', () => {
         assert.equal(res.execResult.exceptionError, undefined)
         assert.equal(res.execResult.executionGasUsed, BigInt(testCase.used))
         assert.equal(res.execResult.gasRefund, BigInt(testCase.refund))
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         assert.fail(e.message)
       }
     }

@@ -208,7 +208,10 @@ describe('RPC State Manager API tests', () => {
     try {
       await createBlockFromJSONRPCProvider(provider, 'fakeBlockTag', {} as any)
       assert.fail('should have thrown')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('expected blockTag to be block hash, bigint, hex prefixed string'),
         'threw with correct error when invalid blockTag provided',
@@ -307,7 +310,10 @@ describe('runBlock test', () => {
         block.header.gasUsed,
         'should compute correct cumulative gas for block',
       )
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.fail(`should have successfully ran block; got error ${err.message}`)
     }
   })

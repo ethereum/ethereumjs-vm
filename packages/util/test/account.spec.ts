@@ -319,7 +319,10 @@ describe('Utility Functions', () => {
       '0x3a443d8381a6798a70c6ff9304bdc8cb0163c23211d11628fae52ef9e0dca11a001cf066d56a8156fc201cd5df8a36ef694eecd258903fca7086c1fae7441e1d' as any
     try {
       isValidPublic((<unknown>pubKey) as Uint8Array)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('This method only supports Uint8Array'),
         'should throw if input is not Uint8Array',
@@ -458,7 +461,10 @@ describe('Utility Functions', () => {
     privateKey = '0xea54bdc52d163f88c93ab0615782cf718a2efb9e51a7989aab1b08067e9c1c5f' as any
     try {
       privateToPublic((<unknown>privateKey) as Uint8Array)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('This method only supports Uint8Array'),
         'should throw if private key is not Uint8Array',

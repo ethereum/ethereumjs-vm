@@ -738,7 +738,10 @@ export class VMExecution extends Execution {
                   // set as new head block
                   headBlock = block
                   parentState = block.header.stateRoot
-                } catch (error: any) {
+                } catch (error) {
+                  if (!(error instanceof Error)) {
+                    error = new Error(error)
+                  }
                   // only marked the block as invalid if it was an actual execution error
                   // for e.g. absence of executionWitness doesn't make a block invalid
                   if (!`${error.message}`.includes('Invalid executionWitness=null')) {

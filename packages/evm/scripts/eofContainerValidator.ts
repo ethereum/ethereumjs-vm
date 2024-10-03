@@ -28,7 +28,10 @@ function processLine(line) {
   try {
     validateEOF(bytes, evm)
     console.log('OK')
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     console.log('err: ' + e.message)
   }
 }

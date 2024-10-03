@@ -265,7 +265,10 @@ describe('store()', async () => {
     try {
       await fetcher.store([])
       assert.fail('fetcher store should have errored')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(
         err.message,
         `Blocks don't extend canonical subchain`,

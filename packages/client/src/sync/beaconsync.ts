@@ -141,7 +141,10 @@ export class BeaconSynchronizer extends Synchronizer {
       while (this.running) {
         try {
           await this.sync()
-        } catch (error: any) {
+        } catch (error) {
+          if (!(error instanceof Error)) {
+            error = new Error(error)
+          }
           this.config.logger.error(`Beacon sync error: ${error.message}`)
           this.config.events.emit(Event.SYNC_ERROR, error)
         }

@@ -158,7 +158,10 @@ export class RlpxServer extends Server {
     for (const promise of promises) {
       try {
         await promise
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         this.error(e)
       }
     }
@@ -277,7 +280,10 @@ export class RlpxServer extends Server {
           this.peers.set(peer.id, peer)
           this.config.logger.debug(`Peer connected: ${peer}`)
           this.config.events.emit(Event.PEER_CONNECTED, peer)
-        } catch (error: any) {
+        } catch (error) {
+          if (!(error instanceof Error)) {
+            error = new Error(error)
+          }
           // Fixes a memory leak where RlpxPeer objects could not be GCed,
           // likely to the complex two-way bound-protocol logic
           peer = null

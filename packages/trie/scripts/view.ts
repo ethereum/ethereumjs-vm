@@ -103,7 +103,10 @@ export const view = async (testName: string, inputs: any[], root: string) => {
     }
     try {
       await trie.put(input[0], input[1])
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       debugT(`trie.put error: ${e.message}`)
     }
     trie.checkpoint()

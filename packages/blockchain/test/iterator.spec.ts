@@ -158,7 +158,10 @@ describe('blockchain test', () => {
       await blockchain.iterator('error', () => {
         throw new Error('iterator func error')
       })
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(error)
       assert.equal(error.message, 'iterator func error', 'should return correct error')
     }

@@ -46,7 +46,10 @@ export class RPCManager {
         methods[concatenatedMethodName] = mod[methodName].bind((...params: any[]) => {
           try {
             mod(...params)
-          } catch (error: any) {
+          } catch (error) {
+            if (!(error instanceof Error)) {
+              error = new Error(error)
+            }
             throw {
               code: INTERNAL_ERROR,
               message: error.message ?? error,

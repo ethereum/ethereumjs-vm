@@ -319,7 +319,7 @@ export class EVM implements EVMInterface {
     if (!message.delegatecall) {
       try {
         await this._addToBalance(toAccount, message)
-      } catch (e: any) {
+      } catch (e) {
         errorMessage = e
       }
     }
@@ -504,7 +504,7 @@ export class EVM implements EVMInterface {
     let errorMessage
     try {
       await this._addToBalance(toAccount, message as MessageWithTo)
-    } catch (e: any) {
+    } catch (e) {
       errorMessage = e
     }
 

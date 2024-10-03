@@ -51,7 +51,10 @@ describe('should not sync with stale peers', async () => {
       await localServer.discover('remotePeer', '127.0.0.2')
       await wait(300)
       assert.fail('should not sync')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok('did not sync')
     }
   })

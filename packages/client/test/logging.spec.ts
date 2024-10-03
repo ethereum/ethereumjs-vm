@@ -20,7 +20,10 @@ describe('[Logging]', () => {
   it('should log error stacks properly', () => {
     try {
       throw new Error('an error')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       e.level = 'error'
       assert.ok(
         /an error\n {4}at/.test((format.transform(e) as any).message),

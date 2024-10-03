@@ -131,7 +131,10 @@ describe('Original storage cache', async () => {
   it("getOriginalContractStorage should validate the key's length", async () => {
     try {
       await stateManager.originalStorageCache.get(address, new Uint8Array(12))
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.equal(e.message, 'Storage key must be 32 bytes long')
       return
     }

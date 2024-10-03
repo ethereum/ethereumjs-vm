@@ -116,7 +116,10 @@ describe('Wallet tests', () => {
   it('.toV3() should fail', async () => {
     try {
       await Wallet.fromPublicKey(pubKey).toV3('')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('This is a public key only wallet'),
         'fails to generate V3 when no private key present',
@@ -316,7 +319,10 @@ describe('Wallet tests', () => {
 
     try {
       await fixtureWallet.toV3('testtest', { kdf: 'superkey' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('Unsupported kdf'), 'should fail for unsupported kdf')
     }
   }, 30000)
@@ -326,34 +332,52 @@ describe('Wallet tests', () => {
 
     try {
       await fixtureWallet.toV3(pw, { salt: 'f' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStr))
     }
 
     try {
       await fixtureWallet.toV3(pw, { salt: 'fff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStr))
     }
     try {
       await fixtureWallet.toV3(pw, { salt: 'xfff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStr))
     }
     try {
       await fixtureWallet.toV3(pw, { salt: 'fffx' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStr))
     }
     try {
       await fixtureWallet.toV3(pw, { salt: 'fffxff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStr))
     }
 
     try {
       await fixtureWallet.toV3(pw, { salt: {} as never as undefined })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes(
           'Invalid salt, must be a string (empty or a non-zero even number of hex characters) or Uint8Array',
@@ -499,55 +523,85 @@ describe('Wallet tests', () => {
 
     try {
       await fixtureWallet.toV3(pw, { iv: '' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
 
     try {
       await fixtureWallet.toV3(pw, { iv: 'ff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { iv: 'ffffffffffffffffffffffffffffffffff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { iv: 'xfffffffffffffffffffffffffffffff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { iv: 'fffffffffffffffffffffffffffffffx' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { iv: 'fffffffffffffffxffffffffffffffff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { iv: hexToBytes('0x') })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
       await fixtureWallet.toV3(pw, { iv: hexToBytes('0xff') })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
       await fixtureWallet.toV3(pw, {
         iv: hexToBytes('0xffffffffffffffffffffffffffffffffff'),
       })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
       await fixtureWallet.toV3(pw, { iv: {} as never as any })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes(
           'Invalid iv, must be a string (32 hex characters) or Uint8Array (16 bytes)',
@@ -562,54 +616,84 @@ describe('Wallet tests', () => {
 
     try {
       await fixtureWallet.toV3(pw, { uuid: '' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { uuid: 'ff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { uuid: 'ffffffffffffffffffffffffffffffffff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { uuid: 'xfffffffffffffffffffffffffffffff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffffffffffffffffffx' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffxffffffffffffffff' })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errStrLength))
     }
     try {
       await fixtureWallet.toV3(pw, { uuid: hexToBytes('0x') })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
       await fixtureWallet.toV3(pw, { uuid: hexToBytes('0xff') })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
       await fixtureWallet.toV3(pw, {
         uuid: hexToBytes('0xffffffffffffffffffffffffffffffffff'),
       })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes(errBuffLength))
     }
     try {
       await fixtureWallet.toV3(pw, { uuid: {} as never as any })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes(
           'Invalid uuid, must be a string (32 hex characters) or Uint8Array (16 bytes)',
@@ -727,7 +811,10 @@ describe('Wallet tests', () => {
         '{"crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
       try {
         await Wallet.fromV3(w, 'wrongtestpassword')
-      } catch (err: any) {
+      } catch (err) {
+        if (!(err instanceof Error)) {
+          err = new Error(err)
+        }
         assert.ok(err.message.includes('Key derivation failed - possibly wrong passphrase'))
       }
     }, 30000)
@@ -744,7 +831,10 @@ describe('Wallet tests', () => {
 
       try {
         await Wallet.fromV3(w, 'testpassword')
-      } catch (err: any) {
+      } catch (err) {
+        if (!(err instanceof Error)) {
+          err = new Error(err)
+        }
         // TODO: Determine if specific error message should be checked (different between NodeJS and browser)
         assert.ok(err !== undefined, 'threw error for broken input in strict mode')
       }
@@ -753,7 +843,10 @@ describe('Wallet tests', () => {
       const w = '{"version":2}'
       try {
         await Wallet.fromV3(w, 'testpassword')
-      } catch (err: any) {
+      } catch (err) {
+        if (!(err instanceof Error)) {
+          err = new Error(err)
+        }
         assert.ok(err.message.includes('Not a V3 wallet'))
       }
     }, 30000)
@@ -761,7 +854,10 @@ describe('Wallet tests', () => {
       const w = '{"crypto":{"kdf":"superkey"},"version":3}'
       try {
         await Wallet.fromV3(w, 'testpassword')
-      } catch (err: any) {
+      } catch (err) {
+        if (!(err instanceof Error)) {
+          err = new Error(err)
+        }
         assert.ok(err.message.includes('Unsupported key derivation scheme'))
       }
     }, 30000)
@@ -769,7 +865,10 @@ describe('Wallet tests', () => {
       const w = '{"crypto":{"kdf":"pbkdf2","kdfparams":{"prf":"invalid"}},"version":3}'
       try {
         await Wallet.fromV3(w, 'testpassword')
-      } catch (err: any) {
+      } catch (err) {
+        if (!(err instanceof Error)) {
+          err = new Error(err)
+        }
         assert.ok(err.message.includes('Unsupported parameters to PBKDF2'))
       }
     }, 30000)

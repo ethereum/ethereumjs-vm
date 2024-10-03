@@ -337,7 +337,10 @@ async function verifyMerkleProof(
       trie: proofTrie,
       value,
     }
-  } catch (err: any) {
+  } catch (err) {
+    if (!(err instanceof Error)) {
+      err = new Error(err)
+    }
     if (err.message === 'Missing node in DB') {
       throw new Error('Invalid proof provided')
     } else {

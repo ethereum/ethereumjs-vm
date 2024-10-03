@@ -468,7 +468,10 @@ describe('RunCall tests', () => {
     try {
       await evm.runCall(runCallArgs)
       assert.fail('should not accept a negative call value')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('value field cannot be negative'),
         'throws on negative call value',

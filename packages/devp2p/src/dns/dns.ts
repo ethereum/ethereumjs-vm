@@ -102,7 +102,10 @@ export class DNS {
         default:
           return null
       }
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (this.DEBUG) {
         debug(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`)
       }

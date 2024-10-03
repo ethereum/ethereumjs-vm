@@ -235,7 +235,10 @@ describe('Clique: Initialization', () => {
     try {
       await blockchain.putBlock(block)
       assert.fail('should fail')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(
         error.message.includes('checkpoint signer not found in active signers list'),
         'correct error',
@@ -266,7 +269,10 @@ describe('Clique: Initialization', () => {
     try {
       await blockchain.putBlock(block)
       assert.fail('should fail')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(
         error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)'),
         'correct error',
@@ -292,7 +298,10 @@ describe('Clique: Initialization', () => {
     try {
       await blockchain.putBlock(block)
       assert.fail('should fail')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(error.message.includes('invalid clique difficulty'), 'correct error')
     }
   })
@@ -664,7 +673,10 @@ describe('Clique: Initialization', () => {
     try {
       await addNextBlock(blockchain, blocks, B)
       assert.fail('should throw error')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(
         error.message.includes('invalid PoA block signature (clique)'),
         'correct error thrown',
@@ -678,7 +690,10 @@ describe('Clique: Initialization', () => {
     try {
       await addNextBlock(blockchain, blocks, A)
       assert.fail('should throw error')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(error.message.includes('recently signed'), 'correct error thrown')
     }
   })
@@ -707,7 +722,10 @@ describe('Clique: Initialization', () => {
     try {
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
       assert.fail('should throw error')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(error.message.includes('recently signed'), 'correct error thrown')
     }
   })

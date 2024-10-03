@@ -115,7 +115,10 @@ describe('store()', async () => {
     try {
       await fetcher.store([0 as any])
       assert.fail('should fail')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(err.message, 'err0', 'store() threw on invalid header')
     }
   })

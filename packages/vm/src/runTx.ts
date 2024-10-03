@@ -161,7 +161,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       debug(`tx checkpoint committed`)
     }
     return result
-  } catch (e: any) {
+  } catch (e) {
     await vm.evm.journal.revert()
     if (vm.DEBUG) {
       debug(`tx checkpoint reverted`)

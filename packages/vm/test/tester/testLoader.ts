@@ -89,7 +89,10 @@ export function getTestFromSource(file: string, onFile: Function) {
     .on('end', function () {
       try {
         test = JSON.parse(contents)
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         onFile(e)
       }
 

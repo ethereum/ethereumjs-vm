@@ -148,7 +148,10 @@ describe('[CLI]', () => {
           await wait(600)
           const client = Client.http({ port: 7777 })
           await client.request('engine_exchangeCapabilities', [], 2.0)
-        } catch (e: any) {
+        } catch (e) {
+          if (!(e instanceof Error)) {
+            e = new Error(e)
+          }
           assert(
             e.message.includes('Unauthorized: Error: Missing auth header'),
             'authentication failure shows that auth is defaulting to active',
@@ -347,7 +350,10 @@ describe('[CLI]', () => {
         try {
           await clientNoConnection.request('web3_clientVersion', [], 2.0)
           assert.fail('should have thrown on invalid client address')
-        } catch (e: any) {
+        } catch (e) {
+          if (!(e instanceof Error)) {
+            e = new Error(e)
+          }
           assert.ok(e !== undefined, 'failed to connect to RPC on invalid address')
           child.kill()
           resolve(undefined)

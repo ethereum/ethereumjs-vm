@@ -598,7 +598,10 @@ export class Peer {
       if (protocolName === 'Peer') {
         try {
           payload = RLP.decode(payload)
-        } catch (e: any) {
+        } catch (e) {
+          if (!(e instanceof Error)) {
+            e = new Error(e)
+          }
           if (msgCode === PREFIXES.DISCONNECT) {
             if (compressed) {
               payload = RLP.decode(origPayload)
@@ -611,7 +614,10 @@ export class Peer {
         }
       }
       protocolObj.protocol._handleMessage?.(msgCode, payload)
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this.DEBUG && this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.events.emit('error', err)
@@ -643,7 +649,10 @@ export class Peer {
             break
         }
       }
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this.DEBUG && this._logger(`Error on peer socket data handling: ${err}`)
       this.events.emit('error', err)

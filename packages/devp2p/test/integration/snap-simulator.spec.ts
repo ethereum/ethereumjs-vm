@@ -31,7 +31,10 @@ describe('Snap sync simulator tests', () => {
     opts.sendMessage = function (rlpxs: any, snap: any) {
       try {
         snap.sendMessage(0x55, [1, []])
-      } catch (err: any) {
+      } catch (err) {
+        if (!(err instanceof Error)) {
+          err = new Error(err)
+        }
         const msg = 'Error: Unknown code 85'
         assert.equal(err.toString(), msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)

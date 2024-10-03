@@ -107,7 +107,10 @@ describe('blockchain test', () => {
         validateConsensus: false,
         genesisBlock,
       })
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(error, 'returned with error')
     }
   })
@@ -221,7 +224,10 @@ describe('blockchain test', () => {
     try {
       await blockchain.getBlock(5)
       assert.fail('should throw an exception')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-number request`,
@@ -231,7 +237,10 @@ describe('blockchain test', () => {
     try {
       await blockchain.getBlock(hexToBytes('0x1234'))
       assert.fail('should throw an exception')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(
         e.message.includes('not found in DB'),
         `should throw for non-existing block-by-hash request`,
@@ -260,14 +269,20 @@ describe('blockchain test', () => {
     try {
       await blockchain.getBlock(22)
       assert.fail('canonical references should have been deleted')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('not found in DB'), 'canonical references correctly deleted')
     }
 
     try {
       await blockchain.getCanonicalHeader(BigInt(22))
       assert.fail('canonical references should have been deleted')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(
         err.message,
         'header with number 22 not found in canonical chain',
@@ -538,7 +553,10 @@ describe('blockchain test', () => {
     try {
       await blockchain.getBlock(BigInt(2))
       assert.fail('block should not be constructed')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.equal(
         e.message,
         'uncle hash should be equal to hash of empty array',
@@ -572,7 +590,10 @@ describe('blockchain test', () => {
     try {
       await blockchain.putBlock(invalidBlock)
       assert.fail('should not validate an invalid block')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.ok(error, 'should not validate an invalid block')
     }
   })
@@ -752,7 +773,10 @@ describe('blockchain test', () => {
       let error
       try {
         await blockchain.putBlock(blocks[i])
-      } catch (err: any) {
+      } catch (err) {
+        if (!(err instanceof Error)) {
+          err = new Error(err)
+        }
         error = err
       }
       if (i === 2) {
@@ -850,7 +874,10 @@ describe('initialization tests', () => {
     try {
       await blockchain.putBlock(otherGenesisBlock)
       assert.fail('putting a genesis block did not throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.equal(
         e.message,
         'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain',
@@ -862,7 +889,10 @@ describe('initialization tests', () => {
     try {
       await createBlockchain({ genesisBlock: otherGenesisBlock, db })
       assert.fail('creating blockchain with different genesis block than in db did not throw')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.equal(
         e.message,
         'The genesis block in the DB has a different hash than the provided genesis block.',

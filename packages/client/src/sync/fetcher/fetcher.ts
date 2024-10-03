@@ -460,7 +460,10 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         }
         this.finished += jobItems.length
         cb()
-      } catch (error: any) {
+      } catch (error) {
+        if (!(error instanceof Error)) {
+          error = new Error(error)
+        }
         this.config.logger.warn(`Error storing received block or header result: ${error}`)
         const { destroyFetcher, banPeer, stepBack } = this.processStoreError(
           error,

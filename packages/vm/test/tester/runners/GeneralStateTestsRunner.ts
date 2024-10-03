@@ -105,7 +105,10 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   try {
     tx = makeTx(testData.transaction, { common })
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     console.log('error: ', e)
     console.log('testData.transaction: ', testData.transaction)
     execInfo = 'tx instantiation exception'
@@ -153,7 +156,10 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       try {
         await runTx(vm, { tx, block })
         execInfo = 'successful tx run'
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         console.log(e)
         execInfo = `tx runtime error :${e.message}`
       }
@@ -208,7 +214,10 @@ export async function runStateTest(options: any, testData: any, t: tape.Test) {
         await runTestCase(options, testCase, t)
       }
     }
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     console.log(e)
     t.fail(`error running test case for fork: ${options.forkConfigTestSuite}`)
   }

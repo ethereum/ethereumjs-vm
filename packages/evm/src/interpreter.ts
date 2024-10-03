@@ -322,7 +322,7 @@ export class Interpreter {
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
-      } catch (e: any) {
+      } catch (e) {
         if (overheadTimer !== undefined) {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }

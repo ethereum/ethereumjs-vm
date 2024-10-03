@@ -107,7 +107,10 @@ describe('Custom consensus validation rules', () => {
     try {
       await blockchain.putBlock(blockWithBadDifficulty)
       assert.fail('should throw')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('invalid difficulty'),
         'failed to put block with invalid difficulty',
@@ -130,7 +133,10 @@ describe('Custom consensus validation rules', () => {
     try {
       await blockchain.putBlock(blockWithBadExtraData)
       assert.fail('should throw')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message ===
           'header contains invalid extradata - must match first 6 elements of fibonacci sequence',
@@ -148,7 +154,10 @@ describe('consensus transition checks', () => {
     try {
       await blockchain.checkAndTransitionHardForkByNumber(5n)
       assert.ok('checkAndTransitionHardForkByNumber does not throw with custom consensus')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.fail(
         `checkAndTransitionHardForkByNumber should not throw with custom consensus, error=${err.message}`,
       )
@@ -161,7 +170,10 @@ describe('consensus transition checks', () => {
       assert.fail(
         'checkAndTransitionHardForkByNumber should throw when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different',
       )
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(err.message.includes('Consensus object for ethash must be passed'))
     }
   })

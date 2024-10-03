@@ -28,7 +28,10 @@ describe('invalid RLPs', () => {
       try {
         RLP.decode(input)
         assert.fail()
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         if (typeof msg !== 'undefined') {
           assert.deepEqual(e.message, msg)
         } else {

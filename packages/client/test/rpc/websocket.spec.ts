@@ -36,7 +36,10 @@ describe('JSON-RPC call', () => {
           resolve(undefined)
         })
       })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.fail(err)
     }
   })
@@ -70,7 +73,10 @@ describe('JSON-RPC call', () => {
           resolve(undefined)
         })
       })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.fail(err)
     }
   })

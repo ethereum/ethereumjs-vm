@@ -281,7 +281,10 @@ describe('StateManager -> General', () => {
     try {
       await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof], true)
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(e.message.includes('proof does not have the expected trie root'))
     }
 
@@ -296,7 +299,10 @@ describe('StateManager -> General', () => {
     try {
       await fromMerkleStateProof([proof1, zeroAddressProof], true)
       assert.fail('cannot reach this')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(e.message.includes('proof does not have the expected trie root'))
     }
 

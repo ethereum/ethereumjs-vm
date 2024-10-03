@@ -96,7 +96,7 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
       tx.cache.senderPubKey = sender
     }
     return sender
-  } catch (e: any) {
+  } catch {
     const msg = errorMsg(tx, 'Invalid Signature')
     throw new Error(msg)
   }

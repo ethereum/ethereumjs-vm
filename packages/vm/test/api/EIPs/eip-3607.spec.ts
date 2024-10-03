@@ -18,7 +18,10 @@ describe('EIP-3607 tests', () => {
     try {
       await runTx(vm, { tx, skipHardForkValidation: true })
       assert.fail('runTx should have thrown')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if ((error.message as string).includes('EIP-3607')) {
         assert.ok(true, 'threw correct error')
       } else {
@@ -35,7 +38,10 @@ describe('EIP-3607 tests', () => {
     try {
       await runTx(vm, { tx, skipHardForkValidation: true })
       assert.ok('runTx successfully ran')
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       assert.fail('threw an unexpected error')
     }
   })

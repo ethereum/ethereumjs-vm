@@ -141,7 +141,10 @@ export class VerkleTree {
     try {
       const value = await this._db.get(root)
       return value !== null
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (error.message === 'Missing node in DB') {
         return equalsBytes(root, this.EMPTY_TREE_ROOT)
       } else {

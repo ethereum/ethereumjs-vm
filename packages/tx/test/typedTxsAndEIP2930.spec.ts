@@ -162,7 +162,10 @@ describe('[AccessList2930Transaction / FeeMarket1559Tx] -> EIP-2930 Compatibilit
     for (const txType of txTypes) {
       try {
         txType.create.rlp(new Uint8Array([99]), {})
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         assert.ok(
           e.message.includes('wrong tx type'),
           `should throw on wrong tx type (${txType.name})`,
@@ -173,7 +176,10 @@ describe('[AccessList2930Transaction / FeeMarket1559Tx] -> EIP-2930 Compatibilit
         // Correct tx type + RLP-encoded 5
         const serialized = concatBytes(new Uint8Array([txType.type]), new Uint8Array([5]))
         txType.create.rlp(serialized, {})
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         assert.ok(
           e.message.includes('must be array'),
           `should throw when RLP payload not an array (${txType.name})`,
@@ -184,7 +190,10 @@ describe('[AccessList2930Transaction / FeeMarket1559Tx] -> EIP-2930 Compatibilit
         // Correct tx type + RLP-encoded empty list
         const serialized = concatBytes(new Uint8Array([txType.type]), hexToBytes('0xc0'))
         txType.create.rlp(serialized, {})
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         assert.ok(
           e.message.includes('values (for unsigned tx)'),
           `should throw with invalid number of values (${txType.name})`,
@@ -449,7 +458,10 @@ describe('[AccessList2930Transaction] -> Class Specific Tests', () => {
         },
         { common },
       )
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('gasLimit * gasPrice cannot exceed MAX_INTEGER'),
         'throws when gasLimit * gasPrice exceeds MAX_INTEGER',

@@ -107,7 +107,10 @@ describe('ETH simulator tests', () => {
       opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
         try {
           eth.sendMessage(expectedCode, [])
-        } catch (err: any) {
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            err = new Error(err)
+          }
           const msg = `Error: Code ${expectedCode} not allowed with version ${version}`
           assert.equal(err.toString(), msg, `should emit error: ${msg}`)
           util.destroyRLPXs(rlpxs)
@@ -208,7 +211,10 @@ describe('ETH simulator tests', () => {
       opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
         try {
           eth.sendMessage(0x55, [])
-        } catch (err: any) {
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            err = new Error(err)
+          }
           const msg = 'Error: Unknown code 85'
           assert.equal(err.toString(), msg, `should emit error: ${msg}`)
           util.destroyRLPXs(rlpxs)
@@ -227,7 +233,10 @@ describe('ETH simulator tests', () => {
       opts.onOnceStatus0 = function (rlpxs: any, eth: any) {
         try {
           eth.sendMessage(devp2p.ETH.MESSAGE_CODES.STATUS, [])
-        } catch (err: any) {
+        } catch (err) {
+          if (!(err instanceof Error)) {
+            err = new Error(err)
+          }
           const msg = 'Error: Please send status message through .sendStatus'
           assert.equal(err.toString(), msg, `should emit error: ${msg}`)
           util.destroyRLPXs(rlpxs)

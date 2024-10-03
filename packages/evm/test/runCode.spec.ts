@@ -40,7 +40,10 @@ describe('VM.runCode: initial program counter', () => {
             `should start the execution at the specified pc or 0, testCases[${i}]`,
           )
         }
-      } catch (e: any) {
+      } catch (e) {
+        if (!(e instanceof Error)) {
+          e = new Error(e)
+        }
         err = e
       }
 
@@ -68,7 +71,10 @@ describe('VM.runCode: interpreter', () => {
     let result: any
     try {
       result = await evm.runCode!(runCodeArgs)
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.fail('should not throw error')
     }
     assert.equal(result!.exceptionError!.errorType, 'EvmError')
@@ -97,7 +103,10 @@ describe('VM.runCode: interpreter', () => {
     try {
       await evm.runCode!(runCodeArgs)
       assert.fail('should throw error')
-    } catch (e: any) {
+    } catch (e) {
+      if (!(e instanceof Error)) {
+        e = new Error(e)
+      }
       assert.ok(e.toString().includes('Test'), 'error thrown')
     }
   })
@@ -115,7 +124,10 @@ describe('VM.runCode: RunCodeOptions', () => {
     try {
       await evm.runCode!(runCodeArgs)
       assert.fail('should not accept a negative call value')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.ok(
         err.message.includes('value field cannot be negative'),
         'throws on negative call value',

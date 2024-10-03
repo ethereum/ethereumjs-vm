@@ -577,7 +577,10 @@ export class TxPool {
         newTxHashes[0].push(tx.type)
         newTxHashes[1].push(tx.serialize().byteLength)
         newTxHashes[2].push(tx.hash())
-      } catch (error: any) {
+      } catch (error) {
+        if (!(error instanceof Error)) {
+          error = new Error(error)
+        }
         this.config.logger.debug(
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`,
         )
@@ -636,7 +639,10 @@ export class TxPool {
     for (const tx of txs) {
       try {
         await this.add(tx)
-      } catch (error: any) {
+      } catch (error) {
+        if (!(error instanceof Error)) {
+          error = new Error(error)
+        }
         this.config.logger.debug(
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`,
         )

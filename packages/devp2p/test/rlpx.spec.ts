@@ -147,7 +147,10 @@ describe('RLPx', () => {
     try {
       await rlpx.connect(mockPeer)
       assert.fail('should throw')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(err.message, 'Already connected')
     }
   })

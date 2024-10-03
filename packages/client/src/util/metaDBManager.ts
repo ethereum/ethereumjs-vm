@@ -59,7 +59,10 @@ export class MetaDBManager {
   async get(type: DBKey, hash: Uint8Array): Promise<Uint8Array | null> {
     try {
       return await this.metaDB.get(this.dbKey(type, hash), encodingOpts)
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       if (error.code === 'LEVEL_NOT_FOUND') {
         return null
       }

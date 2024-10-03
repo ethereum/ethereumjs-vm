@@ -249,7 +249,10 @@ describe('store()', async () => {
     try {
       await fetcher.store([])
       assert.fail('fetcher store should have errored')
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(err.message, 'could not find parent header', 'store() threw on invalid block')
       const { destroyFetcher, banPeer } = fetcher.processStoreError(err, {
         first: BigInt(1),

@@ -139,7 +139,10 @@ export class DPT {
       if (peer.id !== undefined) {
         this._confirmedPeers.add(bytesToUnprefixedHex(peer.id))
       }
-    } catch (error: any) {
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        error = new Error(error)
+      }
       this.events.emit('error', error)
       return
     }
@@ -165,7 +168,10 @@ export class DPT {
       this.events.emit('peer:new', peer)
       this._kbucket.add(peer)
       return peer
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       this._banlist.add(obj, 300000) // 5 min * 60 * 1000
       throw err
     }

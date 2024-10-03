@@ -37,7 +37,7 @@ export async function precompile13(opts: PrecompileInput): Promise<ExecResult> {
   let returnValue
   try {
     returnValue = bls.mapFP2toG2(opts.data)
-  } catch (e: any) {
+  } catch (e) {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: ${e.message}`)
     }

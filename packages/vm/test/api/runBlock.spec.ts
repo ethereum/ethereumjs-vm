@@ -272,7 +272,10 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     ;(vm.blockchain as any).validateHeader = undefined
     try {
       await runBlock(vm, { block })
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(
         err.message,
         'cannot validate header: blockchain has no `validateHeader` method',

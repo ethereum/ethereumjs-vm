@@ -99,7 +99,10 @@ describe('[LightSynchronizer]', async () => {
     td.when(HeaderFetcher.prototype.fetch()).thenReject(new Error('err0'))
     try {
       await sync.sync()
-    } catch (err: any) {
+    } catch (err) {
+      if (!(err instanceof Error)) {
+        err = new Error(err)
+      }
       assert.equal(err.message, 'err0', 'got error')
       await sync.stop()
       await sync.close()

@@ -200,7 +200,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         } txResults=${result.results.length}`,
       )
     }
-  } catch (err: any) {
+  } catch (err) {
     await vm.evm.journal.revert()
     if (vm.DEBUG) {
       debug(`block checkpoint reverted`)

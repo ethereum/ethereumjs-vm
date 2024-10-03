@@ -58,7 +58,10 @@ export const generateBlockchain = async (numberOfBlocks: number, genesis?: Block
   })
   try {
     await blockchain.putBlocks(blocks.slice(1))
-  } catch (error: any) {
+  } catch (error) {
+    if (!(error instanceof Error)) {
+      error = new Error(error)
+    }
     return { error }
   }
 

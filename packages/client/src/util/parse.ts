@@ -66,7 +66,10 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
       }
       throw new Error(`Unable to parse bootnode URL: ${s}`)
     })
-  } catch (e: any) {
+  } catch (e) {
+    if (!(e instanceof Error)) {
+      e = new Error(e)
+    }
     throw new Error(`Invalid bootnode URLs: ${e.message}`)
   }
 }
