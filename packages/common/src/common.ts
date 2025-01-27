@@ -628,9 +628,14 @@ export class Common {
       // when already applied on same blockOrTime HFs
       // and on the merge since forkhash doesn't change on merge hf
       if (typeof blockOrTime === 'number' && blockOrTime !== 0 && blockOrTime !== prevBlockOrTime) {
-        const hfBlockBytes = hexToBytes(`0x${blockOrTime.toString(16).padStart(16, '0')}`)
-        hfBytes = concatBytes(hfBytes, hfBlockBytes)
-        prevBlockOrTime = blockOrTime
+        // This line ensures that if the forkHash of Paris is checked, it will not change when
+        // compared to the previous fork hash. However, for future forks (such as Shanghai),
+        // the block number of Paris has to be included in the fork hash calculation.
+        if (!(name === Hardfork.Paris && hardfork === Hardfork.Paris)) {
+          const hfBlockBytes = hexToBytes(`0x${blockOrTime.toString(16).padStart(16, '0')}`)
+          hfBytes = concatBytes(hfBytes, hfBlockBytes)
+          prevBlockOrTime = blockOrTime
+        }
       }
 
       if (hf.name === hardfork) break
