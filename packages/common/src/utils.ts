@@ -83,16 +83,6 @@ function parseGethParams(json: any) {
     )
   }
 
-  // Terminal total difficulty logic is not supported any more as the merge has been completed
-  // so the Merge/Paris hardfork block must be 0
-  if (
-    config.terminalTotalDifficulty !== undefined &&
-    (BigInt(difficulty) < BigInt(config.terminalTotalDifficulty) ||
-      config.terminalTotalDifficultyPassed === false)
-  ) {
-    throw new Error('nonzero terminal total difficulty is not supported')
-  }
-
   const params = {
     name,
     chainId,
@@ -144,6 +134,9 @@ function parseGethParams(json: any) {
     [Hardfork.MuirGlacier]: { name: 'muirGlacierBlock' },
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
+    [Hardfork.ArrowGlacier]: { name: 'arrowGlacierBlock' },
+    [Hardfork.GrayGlacier]: { name: 'grayGlacierBlock' },
+    [Hardfork.Paris]: { name: 'mergeForkBlock', postMerge: true },
     [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
@@ -195,10 +188,14 @@ function parseGethParams(json: any) {
   }
 
   if (config.terminalTotalDifficulty !== undefined) {
-    // Merge fork must be placed at 0 since ttd logic is no longer supported
+    // Merge fork must be placed at mergeFork block since ttd logic is no longer supported
+    const mergeForkIdConfig = params.hardforks.filter(
+      (hf) => hf.name === Hardfork.MergeForkIdTransition,
+    )
+    const forkBlock = mergeForkIdConfig.length > 0 ? (mergeForkIdConfig[0].block ?? 0) : 0
     const mergeConfig = {
       name: Hardfork.Paris,
-      block: 0,
+      block: forkBlock,
       timestamp: undefined,
     }
 
