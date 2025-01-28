@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { bn254 } from 'ethereum-cryptography/bn.js'
 
-import { ERROR, EvmError } from '../../exceptions.js'
+import { EvmError, EvmErrorCode, RuntimeErrorMessage } from '../../errors.js'
 
 import type { EVMBN254Interface } from '../../types.js'
 
@@ -69,10 +69,16 @@ function toFrPoint(input: Uint8Array): bigint {
 
 function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+    throw new EvmError({
+      code: EvmErrorCode.RUNTIME_ERROR,
+      reason: RuntimeErrorMessage.BN254_FP_NOT_IN_FIELD,
+    })
   }
   if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+    throw new EvmError({
+      code: EvmErrorCode.RUNTIME_ERROR,
+      reason: RuntimeErrorMessage.BN254_FP_NOT_IN_FIELD,
+    })
   }
 
   const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
@@ -101,7 +107,10 @@ function toG2Point(input: Uint8Array) {
   for (const p of [p_x_1, p_x_2, p_y_1, p_y_2]) {
     const pB = bytesToBigInt(p)
     if (bn254.fields.Fp.create(pB) !== pB) {
-      throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+      throw new EvmError({
+        code: EvmErrorCode.RUNTIME_ERROR,
+        reason: RuntimeErrorMessage.BN254_FP_NOT_IN_FIELD,
+      })
     }
   }
 

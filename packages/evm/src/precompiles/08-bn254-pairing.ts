@@ -1,7 +1,7 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import { EvmError, EvmErrorCode, RuntimeErrorMessage } from '../errors.js'
 import { EvmErrorResult, OOGResult } from '../evm.js'
-import { ERROR, EvmError } from '../exceptions.js'
 
 import { gasLimitCheck, moduloLengthCheck } from './util.js'
 
@@ -14,7 +14,13 @@ import type { PrecompileInput } from './types.js'
 export function precompile08(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('08')
   if (!moduloLengthCheck(opts, 192, pName)) {
-    return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EvmErrorResult(
+      new EvmError({
+        code: EvmErrorCode.RUNTIME_ERROR,
+        reason: RuntimeErrorMessage.INVALID_INPUT_LENGTH,
+      }),
+      opts.gasLimit,
+    )
   }
 
   const inputDataSize = BigInt(Math.floor(opts.data.length / 192))

@@ -1,6 +1,11 @@
 import { EOFContainer, validateEOF } from './eof/container.js'
+import {
+  RuntimeErrorMessage as EVMRuntimeErrorMessage,
+  EvmError,
+  EvmErrorCode,
+  EvmErrorType,
+} from './errors.js'
 import { EVM } from './evm.js'
-import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
 import {
@@ -47,8 +52,10 @@ export {
   EOFContainer,
   EVM,
   EvmError,
-  EVMErrorMessage,
+  EvmErrorCode,
+  EvmErrorType,
   EVMMockBlockchain,
+  EVMRuntimeErrorMessage,
   getActivePrecompiles,
   getOpcodesForHF,
   MCLBLS,

@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 
 import { EOFError } from '../eof/errors.js'
-import { ERROR } from '../exceptions.js'
+import { EvmError, EvmErrorCode, RuntimeErrorMessage } from '../errors.js'
 import { DELEGATION_7702_FLAG } from '../types.js'
 
 import { updateSstoreGasEIP1283 } from './EIP1283.js'
@@ -79,7 +79,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           byteLength = Math.trunc(byteLength) + 1
         }
         if (byteLength < 1 || byteLength > 32) {
-          trap(ERROR.OUT_OF_RANGE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.OUT_OF_RANGE,
+            }),
+          )
         }
         const expPricePerByte = common.param('expByteGas')
         gas += BigInt(byteLength) * expPricePerByte
@@ -241,7 +246,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // For an EOF contract, the behavior is changed (see EIP 7069)
           // RETURNDATACOPY in that case does not throw OOG when reading out-of-bounds
           if (runState.env.eof === undefined) {
-            trap(ERROR.OUT_OF_GAS)
+            trap(
+              new EvmError({
+                code: EvmErrorCode.RUNTIME_ERROR,
+                reason: RuntimeErrorMessage.OUT_OF_GAS,
+              }),
+            )
           }
         }
 
@@ -334,7 +344,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x55,
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
-          trap(ERROR.STATIC_STATE_CHANGE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
         const [key, val] = runState.stack.peek(2)
 
@@ -412,7 +427,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0xa0,
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
-          trap(ERROR.STATIC_STATE_CHANGE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
 
         const [memOffset, memLength] = runState.stack.peek(2)
@@ -420,7 +440,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const topicsCount = runState.opCode - 0xa0
 
         if (topicsCount < 0 || topicsCount > 4) {
-          trap(ERROR.OUT_OF_RANGE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.OUT_OF_RANGE,
+            }),
+          )
         }
 
         gas += subMemUsage(runState, memOffset, memLength, common)
@@ -435,7 +460,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common) {
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
-          trap(ERROR.INVALID_OPCODE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.INVALID_OPCODE,
+            }),
+          )
         }
         const [memOffset, _dataOffset, dataLength] = runState.stack.peek(3)
 
@@ -452,7 +482,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
-          trap(ERROR.INVALID_OPCODE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
         // Note: TX_CREATE_COST is in the base fee (this is 32000 and same as CREATE / CREATE2)
 
@@ -511,7 +546,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0xf0,
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
-          trap(ERROR.STATIC_STATE_CHANGE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
         const [_value, offset, length] = runState.stack.peek(3)
 
@@ -546,7 +586,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const toAddress = createAddressFromStackBigInt(toAddr)
 
         if (runState.interpreter.isStatic() && value !== BIGINT_0) {
-          trap(ERROR.STATIC_STATE_CHANGE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
@@ -607,11 +652,21 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
         if (gasLimit > runState.interpreter.getGasLeft() - gas) {
-          trap(ERROR.OUT_OF_GAS)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.OUT_OF_GAS,
+            }),
+          )
         }
 
         if (gas > runState.interpreter.getGasLeft()) {
-          trap(ERROR.OUT_OF_GAS)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.OUT_OF_GAS,
+            }),
+          )
         }
 
         runState.messageGasLimit = gasLimit
@@ -666,7 +721,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
         if (gasLimit > runState.interpreter.getGasLeft() - gas) {
-          trap(ERROR.OUT_OF_GAS)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.OUT_OF_GAS,
+            }),
+          )
         }
 
         runState.messageGasLimit = gasLimit
@@ -726,7 +786,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
         if (gasLimit > runState.interpreter.getGasLeft() - gas) {
-          trap(ERROR.OUT_OF_GAS)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.OUT_OF_GAS,
+            }),
+          )
         }
 
         runState.messageGasLimit = gasLimit
@@ -738,7 +803,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0xf5,
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
-          trap(ERROR.STATIC_STATE_CHANGE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
 
         const [_value, offset, length, _salt] = runState.stack.peek(4)
@@ -771,7 +841,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
-          trap(ERROR.INVALID_OPCODE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
         // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
@@ -780,7 +855,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // If value is nonzero and in static mode, throw:
         if (runState.interpreter.isStatic() && value !== BIGINT_0) {
-          trap(ERROR.STATIC_STATE_CHANGE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
 
         // If value > 0, charge CALL_VALUE_COST
@@ -790,7 +870,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(EOFError.InvalidExtcallTarget)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: EOFError.InvalidExtcallTarget,
+            }),
+          )
         }
 
         // Charge for memory expansion
@@ -848,7 +933,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
-          trap(ERROR.INVALID_OPCODE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
         // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
@@ -857,7 +947,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(EOFError.InvalidExtcallTarget)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: EOFError.InvalidExtcallTarget,
+            }),
+          )
         }
 
         // Charge for memory expansion
@@ -952,7 +1047,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         if (runState.env.eof === undefined) {
           // Opcode not available in legacy contracts
-          trap(ERROR.INVALID_OPCODE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
         // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
 
@@ -961,7 +1061,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Check if the target address > 20 bytes
         if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(EOFError.InvalidExtcallTarget)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: EOFError.InvalidExtcallTarget,
+            }),
+          )
         }
 
         // Charge for memory expansion
@@ -1013,7 +1118,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0xff,
       async function (runState, gas, common): Promise<bigint> {
         if (runState.interpreter.isStatic()) {
-          trap(ERROR.STATIC_STATE_CHANGE)
+          trap(
+            new EvmError({
+              code: EvmErrorCode.RUNTIME_ERROR,
+              reason: RuntimeErrorMessage.STATIC_STATE_CHANGE,
+            }),
+          )
         }
         const selfdestructToaddressBigInt = runState.stack.peek()[0]
 
