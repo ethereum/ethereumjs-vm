@@ -16,6 +16,7 @@ import { FORMAT, MAGIC, VERSION } from './eof/constants.js'
 import { EOFContainerMode, validateEOF } from './eof/container.js'
 import { setupEOF } from './eof/setup.js'
 import { ContainerSectionType } from './eof/verify.js'
+import { FieldContext } from './evmmax/fieldContext.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { type EVMPerformanceLogger, type Timer } from './logger.js'
 import { Memory } from './memory.js'
@@ -105,6 +106,7 @@ export interface RunState {
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
+  evmmaxState: FieldContext
 }
 
 export interface InterpreterResult {
@@ -190,6 +192,7 @@ export class Interpreter {
       stateManager: this._stateManager,
       blockchain,
       env,
+      evmmaxState: new FieldContext(new Uint8Array(), 0n),
       shouldDoJumpAnalysis: true,
       interpreter: this,
       gasRefund: env.gasRefund,
