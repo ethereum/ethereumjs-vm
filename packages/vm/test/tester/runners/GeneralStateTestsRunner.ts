@@ -3,19 +3,25 @@ import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
-import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
+import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
+  MapDB,
   bytesToHex,
   createAddressFromString,
   equalsBytes,
   toBytes,
 } from '@ethereumjs/util'
+import { createVerkleTree } from '@ethereumjs/verkle'
+import * as verkle from 'micro-eth-signer/verkle'
 
 import { createVM, runTx } from '../../../src/index.js'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.js'
 
+import type { StateManagerInterface } from '@ethereumjs/common'
+import type { VerkleTree } from '@ethereumjs/verkle'
 import type * as tape from 'tape'
+const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -75,23 +81,34 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const begin = Date.now()
   // Copy the common object to not create long-lasting
   // references in memory which might prevent GC
-  const common = options.common.copy()
+  let common = options.common.copy()
   // Have to create a blockchain with empty block as genesisBlock for Merge
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
-  const blockchain = await createBlockchain({ genesisBlock, common })
-  const state = new MerklePatriciaTrie({ useKeyHashing: true, common })
-  const stateManager = new MerkleStateManager({
-    caches: new Caches(),
-    trie: state,
-    common,
-  })
+  let blockchain = await createBlockchain({ genesisBlock, common })
+  let stateTree: VerkleTree | MerklePatriciaTrie
+  let stateManager: StateManagerInterface
+  if (options.stateManager === 'verkle') {
+    const verkleCrypto = await loadVerkleCrypto()
+    stateTree = await createVerkleTree({ verkleCrypto, db: new MapDB() })
+    stateManager = new StatefulVerkleStateManager({
+      common,
+      trie: stateTree,
+    })
+  } else {
+    stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
+    stateManager = new MerkleStateManager({
+      caches: new Caches(),
+      trie: stateTree,
+      common,
+    })
+  }
 
   const evmOpts = {
     bls: options.bls,
     bn254: options.bn254,
   }
-  const vm = await createVM({
+  let vm = await createVM({
     stateManager,
     common,
     blockchain,
@@ -107,8 +124,6 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   try {
     tx = makeTx(testData.transaction, { common })
   } catch (e: any) {
-    console.log('error: ', e)
-    console.log('testData.transaction: ', testData.transaction)
     execInfo = 'tx instantiation exception'
   }
 
@@ -180,9 +195,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   vm.evm.events!.removeListener('step', stepHandler)
   vm.events.removeListener('afterTx', afterTxHandler)
 
-  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
-  // TODO FIXME
-  //common = blockchain = state = stateManager = evm = vm = null // eslint-disable-line
+  common = blockchain = stateTree = stateManager = vm = null as any
 
   return parseFloat(timeSpent)
 }
