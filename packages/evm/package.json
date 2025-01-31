@@ -51,6 +51,7 @@
     "@ethereumjs/util": "^10.0.0-alpha.1",
     "@noble/curves": "^1.8.1",
     "@types/debug": "^4.1.9",
+    "bigint-mod-arith": "^3.3.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^3.1.0",
     "eventemitter3": "^5.0.1"

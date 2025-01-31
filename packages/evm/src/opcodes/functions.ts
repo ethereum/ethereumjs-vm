@@ -1032,6 +1032,48 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.interpreter.log(mem, topicsCount, topicsBuf)
     },
   ],
+  // 0xc0: SETMODX
+  [
+    0xc0,
+    function (runState, _common) {
+      return
+    },
+  ],
+  // 0xc1: STOREX
+  [
+    0xc1,
+    function (runState, _common) {
+      return
+    },
+  ],
+  // 0xc2: LOADX
+  [
+    0xc2,
+    function (runState, _common) {
+      return
+    },
+  ],
+  // 0xc3: ADDMODX
+  [
+    0xc3,
+    function (runState, _common) {
+      return
+    },
+  ],
+  // 0xc4: SUBMODX
+  [
+    0xc4,
+    function (runState, _common) {
+      return
+    },
+  ],
+  // 0xc5: MULMODX
+  [
+    0xc5,
+    function (runState, _common) {
+      return
+    },
+  ],
   // 0xd0: DATALOAD
   [
     0xd0,

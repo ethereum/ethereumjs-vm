@@ -149,6 +149,7 @@ function parseGethParams(json: any) {
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
     [Hardfork.Verkle]: { name: 'verkleTime', postMerge: true, isTimestamp: true },
+    [Hardfork.EVMMax]: { name: 'evmmaxTime', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork
