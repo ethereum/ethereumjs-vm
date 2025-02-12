@@ -63,6 +63,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   protected _debug: Debugger
   protected _caches?: Caches
 
+  preStateRoot: Uint8Array
   originalStorageCache: OriginalStorageCache
   verkleCrypto: VerkleCrypto
 
@@ -75,7 +76,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   // Post-state provided from the executionWitness.
   // Should not update. Used for comparing our computed post-state with the canonical one.
   private _postState: VerkleState = {}
-  private _preState: VerkleState = {}
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -88,6 +88,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   protected readonly DEBUG: boolean = false
 
   private keccakFunction: Function
+
   constructor(opts: StatefulVerkleStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -118,6 +119,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
     this._caches = opts.caches
     this.keccakFunction = opts.common.customCrypto.keccak256 ?? keccak256
     this.verkleCrypto = opts.common.customCrypto.verkle
+    this.preStateRoot = new Uint8Array(32) // Initial state root is zeroes
   }
 
   /**
@@ -179,23 +181,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       throw Error(errorMsg)
     }
 
-    // Populate the pre-state and post-state from the executionWitness
-    const preStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
-      const suffixDiffPairs = suffixDiffs.map(({ currentValue, suffix }) => {
-        const key = `${stem}${padToEven(Number(suffix).toString(16))}`
-        return {
-          [key]: currentValue,
-        }
-      })
+    this.preStateRoot = hexToBytes(executionWitness.parentStateRoot) // set prestate root if given
 
-      return suffixDiffPairs
-    })
-
-    // also maintain a separate preState unaffected by any changes in _state
-    this._preState = preStateRaw.reduce((prevValue, currentValue) => {
-      const acc = { ...prevValue, ...currentValue }
-      return acc
-    }, {})
+    // Populate the post-state from the executionWitness
 
     const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ newValue, currentValue, suffix }) => {
@@ -219,7 +207,6 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     this._postState = postState
 
-    this._debug(`initVerkleExecutionWitness preState=${JSON.stringify(this._preState)}`)
     this._debug(`initVerkleExecutionWitness postState=${JSON.stringify(this._postState)}`)
   }
 

@@ -191,6 +191,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     await vm.evm.journal.commit()
   }
 
+  console.log(block.transactions.map((tx) => bytesToHex(tx.serialize())))
   // Checkpoint state
   await vm.evm.journal.checkpoint()
   if (vm.DEBUG) {
@@ -354,6 +355,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     requests,
   }
 
+  console.log(vm.evm.verkleAccessWitness)
+  console.log(block.transactions)
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
 
   /**
@@ -522,7 +525,7 @@ export async function accumulateParentBlockHash(
   if (!vm.common.isActivatedEIP(2935)) {
     throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
   }
-  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
+  const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('systemAddress')))
   const historyServeWindow = vm.common.param('historyServeWindow')
 
   // getAccount with historyAddress will throw error as witnesses are not bundled

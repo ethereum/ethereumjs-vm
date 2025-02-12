@@ -271,7 +271,7 @@ export const paramsEVM: ParamsDict = {
    */
   2935: {
     // evm
-    historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
+    historyStorageAddress: '0x0000F90827F1C53A10CB7A02335B175320002935', // The address where the historical blockhashes are stored
     historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
   },
@@ -408,5 +408,12 @@ export const paramsEVM: ParamsDict = {
     // gasPrices
     eofcreateGas: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
     returncontractGas: 0, // Base fee of the RETURNCONTRACT opcode
+  },
+  9999: {
+    /* Not an actual EIP, but a placeholder for future EXECUTE precompile EIP */
+    // gasPrices
+    executeGasCost: 50000,
+    executeCumulativeGasLimit: 10000000,
+    executeCumulativeGasTarget: 100000,
   },
 }

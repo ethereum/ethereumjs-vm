@@ -470,4 +470,7 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [2935],
   },
+  9999: {
+    minimumHardfork: Hardfork.Cancun,
+  },
 }

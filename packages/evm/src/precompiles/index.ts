@@ -18,6 +18,7 @@ import { precompile0e } from './0e-bls12-g2msm.js'
 import { precompile0f } from './0f-bls12-pairing.js'
 import { precompile10 } from './10-bls12-map-fp-to-g1.js'
 import { precompile11 } from './11-bls12-map-fp2-to-g2.js'
+import { precompile12 } from './12-execute.js'
 import { MCLBLS, NobleBLS } from './bls12_381/index.js'
 import { NobleBN254, RustBN254 } from './bn254/index.js'
 
@@ -210,6 +211,15 @@ const precompileEntries: PrecompileEntry[] = [
     precompile: precompile11,
     name: 'BLS12_MAP_FP_TO_G2 (0x11)',
   },
+  {
+    address: BYTES_19 + '12',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 9999,
+    },
+    precompile: precompile12,
+    name: 'EXECUTE (0x12)',
+  },
 ]
 
 const precompiles: Precompiles = {
@@ -230,6 +240,7 @@ const precompiles: Precompiles = {
   [BYTES_19 + '0f']: precompile0f,
   [BYTES_19 + '10']: precompile10,
   [BYTES_19 + '11']: precompile11,
+  [BYTES_19 + '12']: precompile12,
 }
 
 type DeletePrecompile = {
