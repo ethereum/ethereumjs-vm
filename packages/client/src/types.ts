@@ -138,6 +138,7 @@ export interface ClientOpts {
   vmProfileBlocks?: boolean
   vmProfileTxs?: boolean
   loadBlocksFromRlp?: string[]
+  loadBlocksFromEra1?: string
   pruneEngineCache?: boolean
   savePreimages?: boolean
   verkleGenesisStateRoot?: Uint8Array
