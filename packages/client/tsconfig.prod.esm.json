@@ -12,6 +12,7 @@
     { "path": "../blockchain/tsconfig.prod.esm.json" },
     { "path": "../common/tsconfig.prod.esm.json" },
     { "path": "../devp2p/tsconfig.prod.esm.json" },
+    { "path": "../era/tsconfig.prod.esm.json" },
     { "path": "../rlp/tsconfig.prod.esm.json" },
     { "path": "../mpt/tsconfig.prod.esm.json" },
     { "path": "../tx/tsconfig.prod.esm.json" },

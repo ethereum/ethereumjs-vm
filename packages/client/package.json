@@ -54,6 +54,7 @@
     "@ethereumjs/devp2p": "7.0.0-alpha.1",
     "@ethereumjs/ethash": "4.0.0-alpha.1",
     "@ethereumjs/evm": "4.0.0-alpha.1",
+    "@ethereumjs/era": "1.0.0-alpha.1",
     "@ethereumjs/genesis": "0.3.0-alpha.1",
     "@ethereumjs/mpt": "7.0.0-alpha.1",
     "@ethereumjs/rlp": "6.0.0-alpha.1",
