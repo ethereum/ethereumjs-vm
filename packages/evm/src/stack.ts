@@ -1,5 +1,10 @@
 import { ERROR, EvmError } from './exceptions.js'
 
+type PeekCache = {
+  num: number
+  peekArray: bigint[]
+}
+
 /**
  * Implementation of the stack used in evm.
  */
@@ -9,6 +14,11 @@ export class Stack {
   private _maxHeight: number
 
   private _len: number = 0
+
+  private _peekCache: PeekCache = {
+    num: 0,
+    peekArray: [],
+  }
 
   constructor(maxHeight?: number) {
     // It is possible to initialize the array with `maxHeight` items. However,
@@ -21,9 +31,19 @@ export class Stack {
     return this._len
   }
 
+  private _delPeekCache() {
+    this._peekCache = {
+      num: 0,
+      peekArray: [],
+    }
+  }
+
   push(value: bigint) {
     if (this._len >= this._maxHeight) {
       throw new EvmError(ERROR.STACK_OVERFLOW)
+    }
+    if (this._peekCache.num > 0) {
+      this._delPeekCache()
     }
 
     // Read current length, set `_store` to value, and then increase the length
@@ -33,6 +53,13 @@ export class Stack {
   pop(): bigint {
     if (this._len < 1) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)
+    }
+    if (this._peekCache.num > 0) {
+      this._delPeekCache()
+    }
+    if (this._peekCache.num === 1) {
+      this._len -= 1
+      return this._peekCache.peekArray[0]
     }
 
     // Length is checked above, so pop shouldn't return undefined
@@ -54,6 +81,14 @@ export class Stack {
 
     if (num === 0) {
       return []
+    }
+    if (this._peekCache.num === num) {
+      this._len -= num
+      return this._peekCache.peekArray
+    }
+
+    if (this._peekCache.num > 0) {
+      this._delPeekCache()
     }
 
     const arr = Array(num)
@@ -83,6 +118,8 @@ export class Stack {
       }
       peekArray[peek] = this._store[index]
     }
+    this._peekCache.num = num
+    this._peekCache.peekArray = peekArray
     return peekArray
   }
 
@@ -93,6 +130,9 @@ export class Stack {
   swap(position: number) {
     if (this._len <= position) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)
+    }
+    if (this._peekCache.num > 0) {
+      this._delPeekCache()
     }
 
     const head = this._len - 1
@@ -121,6 +161,10 @@ export class Stack {
     // Note: this code is borrowed from `push()` (avoids a call)
     if (len >= this._maxHeight) {
       throw new EvmError(ERROR.STACK_OVERFLOW)
+    }
+
+    if (this._peekCache.num > 0) {
+      this._delPeekCache()
     }
 
     const i = len - position
