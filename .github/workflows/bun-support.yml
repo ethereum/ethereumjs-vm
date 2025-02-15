@@ -1,0 +1,83 @@
+name: Bun Support
+#on:
+#  schedule:
+#    - cron: 0 0 * * *
+#  workflow_dispatch:
+
+on:
+  push:
+    branches: [master, develop]
+    tags: ['*']
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: oven-sh/setup-bun@v1
+
+      - run: bunx ci --omit=peer
+
+      - name: Test Block
+        run: bunx vitest run test
+        working-directory: packages/block
+
+      - name: Test Blockchain
+        run: bunx vitest run test
+        working-directory: packages/blockchain
+
+      # Client not working yet in Bun (expected), 2024-01-08
+      # - name: Test Client
+      #   run: bunx vitest run test
+      #   working-directory: packages/client
+
+      - name: Test Common
+        run: bunx vitest run test
+        working-directory: packages/common
+
+      - name: Test Devp2p
+        run: bunx vitest run test
+        working-directory: packages/devp2p
+
+      - name: Test Ethash
+        run: bunx vitest run test
+        working-directory: packages/ethash
+
+      - name: Test EVM
+        run: bunx vitest run test
+        working-directory: packages/evm
+
+      - name: Test RLP
+        run: bunx vitest run test
+        working-directory: packages/rlp
+
+      - name: Test StateManager
+        run: bunx vitest run test
+        working-directory: packages/statemanager
+      
+      - name: Test Trie
+        run: bunx vitest run test
+        working-directory: packages/trie
+
+      - name: Test Tx
+        run: bunx vitest run test
+        working-directory: packages/tx
+      
+      - name: Test Util
+        run: bunx vitest run test
+        working-directory: packages/util
+
+      - name: Test VM
+        run: bunx vitest run test
+        working-directory: packages/vm
+
+      - name: Test Wallet
+        run: bunx vitest run test
+        working-directory: packages/wallet
