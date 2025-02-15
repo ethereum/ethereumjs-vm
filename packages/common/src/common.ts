@@ -713,7 +713,7 @@ export class Common {
   hardforks(): HardforkTransitionConfig[] {
     const hfs = this._chainParams.hardforks
     if (this._chainParams.customHardforks !== undefined) {
-      this._chainParams.customHardforks
+      return this._chainParams.customHardforks
     }
     return hfs
   }
