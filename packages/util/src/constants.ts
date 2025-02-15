@@ -9,6 +9,11 @@ import { hexToBytes } from './bytes.js'
 export const MAX_UINT64 = BigInt('0xffffffffffffffff')
 
 /**
+ * 2^63-1
+ */
+export const MAX_UINT63 = BigInt(2) ** BigInt(63) - BigInt(1)
+
+/**
  * The max integer that the evm can handle (2^256-1)
  */
 export const MAX_INTEGER = BigInt(

@@ -471,5 +471,13 @@ describe('[BaseTransaction]', () => {
         'throws when 64 bit integer equals or exceeds MAX_UINT64',
       )
     }
+    try {
+      valueBoundaryCheck({ a: MAX_UINT64 }, 63, true)
+    } catch (err: any) {
+      assert.ok(
+        err.message.includes('2^63'),
+        'throws when 63 bit integer equals or exceeds MAX_UINT63',
+      )
+    }
   })
 })
