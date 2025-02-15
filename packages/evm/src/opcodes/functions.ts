@@ -381,6 +381,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       const c = b >> a
+      // TODO check if this is faster:
+      // runState.stack.push(BigInt.asUintN(256, c))
       if (isSigned) {
         const shiftedOutWidth = BIGINT_255 - a
         const mask = (MAX_INTEGER_BIGINT >> shiftedOutWidth) << shiftedOutWidth

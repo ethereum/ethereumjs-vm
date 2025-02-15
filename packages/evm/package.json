@@ -39,6 +39,7 @@
     "lint:fix": "npm run biome:fix && eslint --fix --config .eslintrc.cjs . --ext .js,.ts",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "0x ./benchmarks/run.js profiling",
+    "profiler:report": "tsx ./test/opcodes/profiler.ts",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run",
