@@ -84,6 +84,10 @@ jobs:
           --platform linux/amd64
           --build-arg COMMIT=$(git rev-parse HEAD)
         working-directory: ${{github.workspace}}
+      - name: Kurtosis Assertoor GitHub Action
+        uses: ethpandaops/kurtosis-assertoor-github-action@v1
+        with:
+          ethereum_package_args: ${{github.workspace}}/.github/workflows/kurtosis-args.yaml
 
   test-client-cli:
     runs-on: ubuntu-latest
@@ -113,3 +117,13 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - run: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
+
+  # assertoor:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
+  #     - name: Kurtosis Assertoor GitHub Action
+  #       uses: ethpandaops/kurtosis-assertoor-github-action@v1
+  #       with:
+  #         ethereum_package_args: ${{github.workspace}}/.github/workflows/kurtosis-args.yaml
