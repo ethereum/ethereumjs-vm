@@ -76,7 +76,7 @@ describe('verkle tests', () => {
       ([_, chunk]) => chunk.write !== undefined,
     )
     assert.ok(writtenChunks.length === 0)
-    assert.equal(res.execResult.exceptionError?.error, 'out of gas')
+    assert.equal(res.execResult.exceptionError?.type.code, 'out of gas')
   })
 
   it('access witness should contain a write access', async () => {
@@ -109,7 +109,7 @@ describe('verkle tests', () => {
       ([_, chunk]) => chunk.write !== undefined,
     )
     assert.ok(writtenChunks.length === 1)
-    assert.equal(res.execResult.exceptionError?.error, undefined)
+    assert.equal(res.execResult.exceptionError?.type.code, undefined)
   })
 })
 describe('generate an execution witness', () => {

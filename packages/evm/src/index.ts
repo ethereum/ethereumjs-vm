@@ -1,6 +1,6 @@
 import { EOFContainer, validateEOF } from './eof/container.js'
+import { EVMError, EVMErrorCode } from './errors.js'
 import { EVM } from './evm.js'
-import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
 import {
@@ -46,8 +46,8 @@ export type {
 export {
   EOFContainer,
   EVM,
-  EvmError,
-  EVMErrorMessage,
+  EVMError,
+  EVMErrorCode,
   EVMMockBlockchain,
   getActivePrecompiles,
   getOpcodesForHF,

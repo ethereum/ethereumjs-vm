@@ -521,7 +521,7 @@ export class Eth {
       throw {
         code: 3,
         data: bytesToHex(execResult.returnValue),
-        message: execResult.exceptionError.error,
+        message: execResult.exceptionError.type.code, // TODO EVMError now puts the error "message" into the error type, is this correct?
       }
     }
     return bytesToHex(execResult.returnValue)

@@ -143,7 +143,7 @@ describe('Stack', () => {
       const executionReturnValue = res.execResult.returnValue
       assert.deepEqual(executionReturnValue, expectedReturnValue)
     } catch (e: any) {
-      assert.fail(e.message)
+      assert.fail(e.type.code)
     }
   })
 

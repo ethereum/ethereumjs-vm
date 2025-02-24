@@ -43,6 +43,6 @@ describe('Precompiles: ECRECOVER', () => {
       common,
       _EVM: evm,
     })
-    assert.equal(result.exceptionError!.error, 'out of gas', 'should error when not enough gas')
+    assert.equal(result.exceptionError!.type.code, 'out of gas', 'should error when not enough gas')
   })
 })

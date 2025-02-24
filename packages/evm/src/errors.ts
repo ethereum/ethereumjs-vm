@@ -1,4 +1,9 @@
-export enum ERROR {
+import { EthereumJSError } from '@ethereumjs/util'
+
+import type { EOFError } from './eof/errors.js'
+
+// TODO: merge EOF errors in here
+export enum EVMErrorCode {
   OUT_OF_GAS = 'out of gas',
   CODESTORE_OUT_OF_GAS = 'code store out of gas',
   CODESIZE_EXCEEDS_MAXIMUM = 'code size to deposit exceeds maximum code size',
@@ -15,13 +20,11 @@ export enum ERROR {
   REFUND_EXHAUSTED = 'refund exhausted',
   VALUE_OVERFLOW = 'value overflow',
   INSUFFICIENT_BALANCE = 'insufficient balance',
-  INVALID_BEGINSUB = 'invalid BEGINSUB',
-  INVALID_RETURNSUB = 'invalid RETURNSUB',
-  INVALID_JUMPSUB = 'invalid JUMPSUB',
   INVALID_BYTECODE_RESULT = 'invalid bytecode deployed',
   INITCODE_SIZE_VIOLATION = 'initcode exceeds max initcode size',
   INVALID_INPUT_LENGTH = 'invalid input length',
   INVALID_EOF_FORMAT = 'invalid EOF format',
+  INVALID_PRECOMPILE = 'invalid precompile',
 
   // BLS errors
   BLS_12_381_INVALID_INPUT_LENGTH = 'invalid input length',
@@ -38,12 +41,16 @@ export enum ERROR {
   INVALID_PROOF = 'kzg proof invalid',
 }
 
-export class EvmError {
-  error: ERROR
-  errorType: string
+type EVMErrorType =
+  | {
+      code: EVMErrorCode | EOFError
+    }
+  | { code: EVMErrorCode.REVERT; revertBytes: Uint8Array }
 
-  constructor(error: ERROR) {
-    this.error = error
-    this.errorType = 'EvmError'
+export class EVMError extends EthereumJSError<EVMErrorType> {
+  constructor(type: EVMErrorType, message?: string) {
+    super(type, message)
   }
+
+  // TODO: add helper method to format the error in a human readable way
 }

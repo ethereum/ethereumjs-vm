@@ -83,7 +83,7 @@ for (const bls of [undefined, mclbls]) {
               )
               assert.equal(result.executionGasUsed, BigInt(data.Gas))
             } catch (e: any) {
-              assert.fail(e.message)
+              assert.fail(e.type.code)
             }
           }
         })

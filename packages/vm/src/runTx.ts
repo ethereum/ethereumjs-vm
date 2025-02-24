@@ -609,7 +609,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug('-'.repeat(100))
     debug(
       `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
-        exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
+        exceptionError !== undefined ? `'${exceptionError.type.code}'` : 'none'
       } returnValue=${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`,
     )
   }

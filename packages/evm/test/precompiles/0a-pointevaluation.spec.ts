@@ -78,6 +78,6 @@ describe('Precompiles: point evaluation', () => {
       common,
     }
     res = await pointEvaluation(optsWithInvalidCommitment)
-    assert.ok(res.exceptionError?.error.match('invalid input length'), 'invalid input length')
+    assert.ok(res.exceptionError?.type.code.match('invalid input length'), 'invalid input length')
   })
 })

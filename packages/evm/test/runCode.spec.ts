@@ -1,7 +1,7 @@
 import { Account, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
+import { EVMError, createEVM } from '../src/index.js'
 
 const PUSH1 = '60'
 const STOP = '00'
@@ -45,6 +45,11 @@ describe('VM.runCode: initial program counter', () => {
       }
 
       if (testData.error !== undefined) {
+        // TODO: for all tests in EVM: this is a perfect place
+        // to also roll-out the instanceof check for errors
+        // This currently throws not EVMError but instead the generic EthereumJSError
+        // with the error code: `ETHEREUMJS_UNSET_ERROR_CODE`
+        // Here we can thus verify that the error type is generic.
         err = err?.message ?? 'no error thrown'
         assert.equal(err, testData.error, 'error message should match')
         err = false
@@ -71,8 +76,8 @@ describe('VM.runCode: interpreter', () => {
     } catch (e: any) {
       assert.fail('should not throw error')
     }
-    assert.equal(result!.exceptionError!.errorType, 'EvmError')
-    assert.ok(result!.exceptionError!.error.includes('invalid opcode'))
+    assert.ok(result!.exceptionError! instanceof EVMError)
+    assert.ok(result!.exceptionError!.type.code.includes('invalid opcode'))
   })
 
   it('should throw on non-EvmError', async () => {

@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { EVMErrorMessage } from '@ethereumjs/evm'
+import { EVMErrorCode } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -65,7 +65,7 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10000),
     })
 
-    assert.equal(result.exceptionError?.error, EVMErrorMessage.STACK_OVERFLOW)
+    assert.equal(result.exceptionError?.type.code, EVMErrorCode.STACK_OVERFLOW)
   })
 
   it('push0 is not available if EIP3855 is not activated', async () => {
@@ -76,6 +76,6 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10000),
     })
 
-    assert.equal(result.exceptionError!.error, EVMErrorMessage.INVALID_OPCODE)
+    assert.equal(result.exceptionError!.type.code, EVMErrorCode.INVALID_OPCODE)
   })
 })

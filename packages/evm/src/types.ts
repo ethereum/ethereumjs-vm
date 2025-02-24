@@ -1,5 +1,5 @@
 import type { EOFContainer } from './eof/container.js'
-import type { EvmError } from './exceptions.js'
+import type { EVMError } from './errors.js'
 import type { InterpreterStep, RunState } from './interpreter.js'
 import type { Message } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
@@ -388,7 +388,7 @@ export interface ExecResult {
   /**
    * Description of the exception, if any occurred
    */
-  exceptionError?: EvmError
+  exceptionError?: EVMError
   /**
    * Amount of gas left
    */

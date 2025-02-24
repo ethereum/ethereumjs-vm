@@ -18,8 +18,7 @@ import { assert, describe, it } from 'vitest'
 
 import { eip4844Data } from '../../client/test/testdata/geth-genesis/eip4844.js'
 import { defaultBlock } from '../src/evm.js'
-import { ERROR } from '../src/exceptions.js'
-import { createEVM } from '../src/index.js'
+import { EVMErrorCode, createEVM } from '../src/index.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
 
@@ -138,7 +137,7 @@ describe('RunCall tests', () => {
 
     assert.ok(
       byzantiumResult.execResult.exceptionError &&
-        byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
+        byzantiumResult.execResult.exceptionError.type.code === 'invalid opcode',
       'byzantium cannot accept constantinople opcodes (SHL)',
     )
     assert.ok(
@@ -272,7 +271,10 @@ describe('RunCall tests', () => {
 
     assert.equal(runCallArgs.gasLimit, result.execResult.executionGasUsed, 'gas used correct')
     assert.equal(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
-    assert.ok(result.execResult.exceptionError!.error === ERROR.OUT_OF_GAS, 'call went out of gas')
+    assert.ok(
+      result.execResult.exceptionError!.type.code === EVMErrorCode.OUT_OF_GAS,
+      'call went out of gas',
+    )
   })
 
   it('ensure selfdestruct pays for creating new accounts', async () => {
@@ -512,7 +514,7 @@ describe('RunCall tests', () => {
 
     const res2 = await evm.runCall({ ...runCallArgs, skipBalance: false })
     assert.ok(
-      res2.execResult.exceptionError?.error.match('insufficient balance'),
+      res2.execResult.exceptionError?.type.code.match('insufficient balance'),
       'runCall reverts when insufficient sender balance and skipBalance is false',
     )
   })
@@ -536,8 +538,8 @@ describe('RunCall tests', () => {
 
     const result = await evm.runCall(runCallArgs)
     assert.equal(
-      result.execResult.exceptionError?.error,
-      ERROR.CODESIZE_EXCEEDS_MAXIMUM,
+      result.execResult.exceptionError?.type.code,
+      EVMErrorCode.CODESIZE_EXCEEDS_MAXIMUM,
       'reported error is correct',
     )
   })
@@ -648,7 +650,7 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.ok(res.execResult.exceptionError?.error === ERROR.CODESIZE_EXCEEDS_MAXIMUM)
+    assert.ok(res.execResult.exceptionError?.type.code === EVMErrorCode.CODESIZE_EXCEEDS_MAXIMUM)
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -657,7 +659,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+    assert.ok(res2.execResult.exceptionError?.type.code === EVMErrorCode.OUT_OF_GAS)
   })
 
   it('ensure code deposit errors are logged correctly (Frontier)', async () => {
@@ -671,7 +673,8 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.ok(res.execResult.exceptionError?.error === ERROR.CODESTORE_OUT_OF_GAS)
+    // TODO: This now fails?
+    assert.ok(res.execResult.exceptionError?.type.code === EVMErrorCode.CODESTORE_OUT_OF_GAS)
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -680,7 +683,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+    assert.ok(res2.execResult.exceptionError?.type.code === EVMErrorCode.OUT_OF_GAS)
   })
 
   it('ensure call and callcode handle gas stipend correctly', async () => {

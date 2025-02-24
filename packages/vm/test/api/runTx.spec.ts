@@ -492,7 +492,7 @@ describe('runTx() -> runtime errors', () => {
       const res = await runTx(vm, { tx })
 
       assert.equal(
-        res.execResult!.exceptionError!.error,
+        res.execResult!.exceptionError!.type.code,
         'value overflow',
         `result should have 'value overflow' error set (${txType.name})`,
       )
@@ -520,7 +520,7 @@ describe('runTx() -> runtime errors', () => {
       const res = await runTx(vm, { tx })
 
       assert.equal(
-        res.execResult!.exceptionError!.error,
+        res.execResult!.exceptionError!.type.code,
         'value overflow',
         `result should have 'value overflow' error set (${txType.name})`,
       )

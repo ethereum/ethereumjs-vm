@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { bn254 } from '@noble/curves/bn254'
 
-import { ERROR, EvmError } from '../../exceptions.js'
+import { EVMError, EVMErrorCode } from '../../errors.js'
 
 import type { EVMBN254Interface } from '../../types.js'
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
@@ -64,10 +64,14 @@ function toFrPoint(input: Uint8Array): bigint {
 
 function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+    throw new EVMError({
+      code: EVMErrorCode.BN254_FP_NOT_IN_FIELD,
+    })
   }
   if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+    throw new EVMError({
+      code: EVMErrorCode.BN254_FP_NOT_IN_FIELD,
+    })
   }
 
   const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
@@ -96,7 +100,9 @@ function toG2Point(input: Uint8Array) {
   for (const p of [p_x_1, p_x_2, p_y_1, p_y_2]) {
     const pB = bytesToBigInt(p)
     if (bn254.fields.Fp.create(pB) !== pB) {
-      throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+      throw new EVMError({
+        code: EVMErrorCode.BN254_FP_NOT_IN_FIELD,
+      })
     }
   }
 

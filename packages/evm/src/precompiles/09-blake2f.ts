@@ -1,7 +1,7 @@
 import { bytesToHex } from '@ethereumjs/util'
 
+import { EVMError, EVMErrorCode } from '../errors.js'
 import { OOGResult } from '../evm.js'
-import { ERROR, EvmError } from '../exceptions.js'
 
 import { gasLimitCheck } from './util.js'
 
@@ -182,7 +182,9 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     return {
       returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
-      exceptionError: new EvmError(ERROR.OUT_OF_RANGE),
+      exceptionError: new EVMError({
+        code: EVMErrorCode.OUT_OF_RANGE,
+      }),
     }
   }
   const lastByte = data.subarray(212, 213)[0]
@@ -193,7 +195,9 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     return {
       returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
-      exceptionError: new EvmError(ERROR.OUT_OF_RANGE),
+      exceptionError: new EVMError({
+        code: EVMErrorCode.OUT_OF_RANGE,
+      }),
     }
   }
 

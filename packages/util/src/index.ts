@@ -34,6 +34,11 @@ export * from './db.js'
 export * from './withdrawal.js'
 
 /**
+ * EthereumJS Extended Errors
+ */
+export * from './errors.js'
+
+/**
  * ECDSA signature
  */
 export * from './signature.js'

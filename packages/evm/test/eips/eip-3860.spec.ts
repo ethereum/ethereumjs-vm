@@ -43,7 +43,7 @@ describe('EIP 3860 tests', () => {
     }
     const result = await evm.runCall(runCallArgs)
     assert.ok(
-      (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',
+      result.execResult.exceptionError?.type.code === 'initcode exceeds max initcode size',
       'initcode exceeds max size',
     )
   })

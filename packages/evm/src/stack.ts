@@ -1,4 +1,4 @@
-import { ERROR, EvmError } from './exceptions.js'
+import { EVMError, EVMErrorCode } from './errors.js'
 
 /**
  * Implementation of the stack used in evm.
@@ -23,7 +23,9 @@ export class Stack {
 
   push(value: bigint) {
     if (this._len >= this._maxHeight) {
-      throw new EvmError(ERROR.STACK_OVERFLOW)
+      throw new EVMError({
+        code: EVMErrorCode.STACK_OVERFLOW,
+      })
     }
 
     // Read current length, set `_store` to value, and then increase the length
@@ -32,7 +34,9 @@ export class Stack {
 
   pop(): bigint {
     if (this._len < 1) {
-      throw new EvmError(ERROR.STACK_UNDERFLOW)
+      throw new EVMError({
+        code: EVMErrorCode.STACK_UNDERFLOW,
+      })
     }
 
     // Length is checked above, so pop shouldn't return undefined
@@ -49,7 +53,9 @@ export class Stack {
    */
   popN(num: number = 1): bigint[] {
     if (this._len < num) {
-      throw new EvmError(ERROR.STACK_UNDERFLOW)
+      throw new EVMError({
+        code: EVMErrorCode.STACK_UNDERFLOW,
+      })
     }
 
     if (num === 0) {
@@ -79,7 +85,9 @@ export class Stack {
     for (let peek = 0; peek < num; peek++) {
       const index = --start
       if (index < 0) {
-        throw new EvmError(ERROR.STACK_UNDERFLOW)
+        throw new EVMError({
+          code: EVMErrorCode.STACK_UNDERFLOW,
+        })
       }
       peekArray[peek] = this._store[index]
     }
@@ -92,7 +100,9 @@ export class Stack {
    */
   swap(position: number) {
     if (this._len <= position) {
-      throw new EvmError(ERROR.STACK_UNDERFLOW)
+      throw new EVMError({
+        code: EVMErrorCode.STACK_UNDERFLOW,
+      })
     }
 
     const head = this._len - 1
@@ -115,12 +125,16 @@ export class Stack {
   dup(position: number) {
     const len = this._len
     if (len < position) {
-      throw new EvmError(ERROR.STACK_UNDERFLOW)
+      throw new EVMError({
+        code: EVMErrorCode.STACK_UNDERFLOW,
+      })
     }
 
     // Note: this code is borrowed from `push()` (avoids a call)
     if (len >= this._maxHeight) {
-      throw new EvmError(ERROR.STACK_OVERFLOW)
+      throw new EVMError({
+        code: EVMErrorCode.STACK_OVERFLOW,
+      })
     }
 
     const i = len - position
@@ -139,7 +153,9 @@ export class Stack {
 
     // Stack underflow is not possible in EOF
     if (exchangeIndex1 < 0 || exchangeIndex2 < 0) {
-      throw new EvmError(ERROR.STACK_UNDERFLOW)
+      throw new EVMError({
+        code: EVMErrorCode.STACK_UNDERFLOW,
+      })
     }
 
     const cache = this._store[exchangeIndex2]

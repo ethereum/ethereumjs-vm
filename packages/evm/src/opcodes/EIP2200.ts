@@ -1,6 +1,6 @@
 import { equalsBytes } from '@ethereumjs/util'
 
-import { ERROR } from '../exceptions.js'
+import { EVMError, EVMErrorCode } from '../errors.js'
 
 import { adjustSstoreGasEIP2929 } from './EIP2929.js'
 import { trap } from './util.js'
@@ -27,7 +27,7 @@ export function updateSstoreGasEIP2200(
 ) {
   // Fail if not enough gas is left
   if (runState.interpreter.getGasLeft() <= common.param('sstoreSentryEIP2200Gas')) {
-    trap(ERROR.OUT_OF_GAS)
+    trap(new EVMError({ code: EVMErrorCode.OUT_OF_GAS }))
   }
 
   // Noop

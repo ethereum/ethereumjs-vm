@@ -7,8 +7,8 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
+import { EVMError, EVMErrorCode } from '../errors.js'
 import { EvmErrorResult, OOGResult } from '../evm.js'
-import { ERROR, EvmError } from '../exceptions.js'
 
 import { gasLimitCheck } from './util.js'
 
@@ -34,7 +34,12 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   if (opts.data.length !== 192) {
-    return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
+    return EvmErrorResult(
+      new EVMError({
+        code: EVMErrorCode.INVALID_INPUT_LENGTH,
+      }),
+      opts.gasLimit,
+    )
   }
 
   const version = Number(opts.common.param('blobCommitmentVersionKzg'))
@@ -49,7 +54,12 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: INVALID_COMMITMENT`)
     }
-    return EvmErrorResult(new EvmError(ERROR.INVALID_COMMITMENT), opts.gasLimit)
+    return EvmErrorResult(
+      new EVMError({
+        code: EVMErrorCode.INVALID_COMMITMENT,
+      }),
+      opts.gasLimit,
+    )
   }
 
   if (opts._debug !== undefined) {
@@ -62,19 +72,34 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   try {
     const res = opts.common.customCrypto?.kzg?.verifyProof(commitment, z, y, kzgProof)
     if (res === false) {
-      return EvmErrorResult(new EvmError(ERROR.INVALID_PROOF), opts.gasLimit)
+      return EvmErrorResult(
+        new EVMError({
+          code: EVMErrorCode.INVALID_PROOF,
+        }),
+        opts.gasLimit,
+      )
     }
   } catch (err: any) {
     if (err.message.includes('C_KZG_BADARGS') === true) {
       if (opts._debug !== undefined) {
         opts._debug(`${pName} failed: INVALID_INPUTS`)
       }
-      return EvmErrorResult(new EvmError(ERROR.INVALID_INPUTS), opts.gasLimit)
+      return EvmErrorResult(
+        new EVMError({
+          code: EVMErrorCode.INVALID_INPUTS,
+        }),
+        opts.gasLimit,
+      )
     }
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: Unknown error - ${err.message}`)
     }
-    return EvmErrorResult(new EvmError(ERROR.REVERT), opts.gasLimit)
+    return EvmErrorResult(
+      new EVMError({
+        code: EVMErrorCode.INTERNAL_ERROR,
+      }),
+      opts.gasLimit,
+    )
   }
 
   // Return value - FIELD_ELEMENTS_PER_BLOB and BLS_MODULUS as padded 32 byte big endian values

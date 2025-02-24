@@ -40,7 +40,7 @@ describe('EIP 3860 tests', () => {
     ).sign(pkey)
     const result = await runTx(vm, { tx })
     assert.ok(
-      (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',
+      result.execResult.exceptionError?.type.code === 'initcode exceeds max initcode size',
       'initcode exceeds max size',
     )
   })
