@@ -1,4 +1,4 @@
-name: binarytree
+name: Era
 on:
   workflow_call:
     inputs:
@@ -15,18 +15,18 @@ on:
         default: 'none'
 
 env:
-  cwd: ${{github.workspace}}/packages/binarytree
+  cwd: ${{github.workspace}}/packages/era
 
 defaults:
   run:
-    working-directory: packages/binarytree
+    working-directory: packages/era
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-binarytree
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-era
   cancel-in-progress: true
 
 jobs:
-  test-binarytree:
+  test-era:
     runs-on: ubuntu-latest
 
     steps:

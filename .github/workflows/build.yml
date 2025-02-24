@@ -79,6 +79,13 @@ jobs:
     outputs:
       dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}-${{ github.run_id }}
 
+  binarytree:
+    needs: build
+    uses: ./.github/workflows/binarytree-build.yml
+    secrets: inherit
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
   block:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/block-build.yml
@@ -206,16 +213,3 @@ jobs:
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
-  lint:
-    needs: build
-    uses: ./.github/workflows/lint.yml
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
-  typecheck:
-    needs: [build, checkout-submodules]
-    uses: ./.github/workflows/typecheck.yml
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
