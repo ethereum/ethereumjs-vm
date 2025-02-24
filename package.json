@@ -26,7 +26,7 @@
     "postinstall": "npm run build --workspaces",
     "prepare": "git config --local core.hooksPath .githooks",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "install-browser-deps": "npm install webdriverio@9.8.0 @vitest/browser@3.0.5"
+    "install-browser-deps": "npm install webdriverio@8.42.0 @vitest/browser@3.0.5"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -64,7 +64,7 @@
   },
   "peerDependencies": {
     "@vitest/browser": "^3.0.5",
-    "webdriverio": "^9.8.0"
+    "webdriverio": "^8.42.0"
   },
   "peerDependenciesMeta": {
     "playwright": {
