@@ -11,6 +11,8 @@ import { Level } from 'level'
 import { EthereumClient } from '../src/client.js'
 import { DataDirectory } from '../src/config.js'
 import { LevelDB } from '../src/execution/level.js'
+import { eraSync } from '../src/sync/erasync.js'
+import { type ClientOpts } from '../src/types.js'
 import { generateVKTStateRoot } from '../src/util/vkt.js'
 
 import { helpRPC, startRPCServers } from './startRPC.js'
@@ -19,7 +21,6 @@ import { generateClientConfig, getArgs } from './utils.js'
 import type { Config } from '../src/config.js'
 import type { Logger } from '../src/logging.js'
 import type { FullEthereumService } from '../src/service/index.js'
-import type { ClientOpts } from '../src/types.js'
 import type { RPCArgs } from './startRPC.js'
 import type { Block, BlockBytes } from '@ethereumjs/block'
 import type { ConsensusDict } from '@ethereumjs/blockchain'
@@ -213,7 +214,9 @@ async function startClient(
     ...dbs,
   })
   await client.open()
-
+  if (args.loadBlocksFromEra1 !== undefined) {
+    await eraSync(client, config, { loadBlocksFromEra1: args.loadBlocksFromEra1 })
+  }
   if (args.loadBlocksFromRlp !== undefined) {
     // Specifically for Hive simulator, preload blocks provided in RLP format
     const blocks: Block[] = []

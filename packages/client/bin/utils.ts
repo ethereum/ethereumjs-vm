@@ -421,6 +421,11 @@ export function getArgs(): ClientOpts {
         string: true,
         array: true,
       })
+      .option('loadBlocksFromEra1', {
+        describe: 'path to a directory of era1 files',
+        string: true,
+        optional: true,
+      })
       .option('pruneEngineCache', {
         describe:
           'Enable/Disable pruning engine block cache (disable for testing against hive etc)',

@@ -633,6 +633,7 @@
     "unsnappy",
     "ethportal",
     "bytevector",
-    "blobschedule"
+    "blobschedule",
+    "eraSync"
   ]
 }
