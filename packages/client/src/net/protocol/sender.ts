@@ -1,3 +1,4 @@
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 import { EventEmitter } from 'eventemitter3'
 
 /**
@@ -30,7 +31,7 @@ export class Sender extends EventEmitter {
    * @param status
    */
   sendStatus(_status: any) {
-    throw new Error('Unimplemented')
+    throw EthereumJSErrorWithoutCode('Unimplemented')
   }
 
   /**
@@ -39,6 +40,6 @@ export class Sender extends EventEmitter {
    * @param rlpEncodedData rlp encoded message payload
    */
   sendMessage(_code: number, _rlpEncodedData: any[] | Uint8Array) {
-    throw new Error('Unimplemented')
+    throw EthereumJSErrorWithoutCode('Unimplemented')
   }
 }

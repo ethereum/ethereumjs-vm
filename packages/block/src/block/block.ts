@@ -4,6 +4,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToHex,
@@ -123,18 +124,18 @@ export class Block {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoA network is not allowed',
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (this.common.consensusType() === ConsensusType.ProofOfStake) {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoS network is not allowed',
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
     if (!this.common.isActivatedEIP(4895) && withdrawals !== undefined) {
-      throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
+      throw EthereumJSErrorWithoutCode('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
     if (
@@ -142,7 +143,9 @@ export class Block {
       executionWitness !== undefined &&
       executionWitness !== null
     ) {
-      throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
+      throw EthereumJSErrorWithoutCode(
+        `Cannot have executionWitness field if EIP 6800 is not active `,
+      )
     }
 
     const freeze = opts?.freeze ?? true
@@ -299,7 +302,7 @@ export class Block {
       const txErrors = this.getTransactionsValidationErrors()
       if (txErrors.length > 0) {
         const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
@@ -313,24 +316,24 @@ export class Block {
           const msg = this._errorMsg(
             `invalid transactions: transaction at index ${index} is unsigned`,
           )
-          throw new Error(msg)
+          throw EthereumJSErrorWithoutCode(msg)
         }
       }
     }
 
     if (!(await this.transactionsTrieIsValid())) {
       const msg = this._errorMsg('invalid transaction trie')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (!this.uncleHashIsValid()) {
       const msg = this._errorMsg('invalid uncle hash')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (this.common.isActivatedEIP(4895) && !(await this.withdrawalsTrieIsValid())) {
       const msg = this._errorMsg('invalid withdrawals trie')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     // Validation for Verkle blocks
@@ -338,10 +341,12 @@ export class Block {
     // TODO: Decide if we should actually require this or not
     if (this.common.isActivatedEIP(6800)) {
       if (this.executionWitness === undefined) {
-        throw new Error(`Invalid block: missing executionWitness`)
+        throw EthereumJSErrorWithoutCode(`Invalid block: missing executionWitness`)
       }
       if (this.executionWitness === null) {
-        throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
+        throw EthereumJSErrorWithoutCode(
+          `Invalid block: ethereumjs stateless client needs executionWitness`,
+        )
       }
     }
   }
@@ -360,7 +365,7 @@ export class Block {
 
       const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas(this.common)
       if (this.header.excessBlobGas !== expectedExcessBlobGas) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`,
         )
       }
@@ -371,7 +376,7 @@ export class Block {
         if (tx instanceof Blob4844Tx) {
           blobGasPrice = blobGasPrice ?? this.header.getBlobGasPrice()
           if (tx.maxFeePerBlobGas < blobGasPrice) {
-            throw new Error(
+            throw EthereumJSErrorWithoutCode(
               `blob transaction maxFeePerBlobGas ${
                 tx.maxFeePerBlobGas
               } < than block blob gas price ${blobGasPrice} - ${this.errorStr()}`,
@@ -381,7 +386,7 @@ export class Block {
           blobGasUsed += BigInt(tx.blobVersionedHashes.length) * blobGasPerBlob
 
           if (blobGasUsed > blobGasLimit) {
-            throw new Error(
+            throw EthereumJSErrorWithoutCode(
               `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`,
             )
           }
@@ -389,7 +394,7 @@ export class Block {
       }
 
       if (this.header.blobGasUsed !== blobGasUsed) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `block blobGasUsed mismatch: have ${this.header.blobGasUsed}, want ${blobGasUsed}`,
         )
       }
@@ -415,7 +420,7 @@ export class Block {
    */
   async withdrawalsTrieIsValid(): Promise<boolean> {
     if (!this.common.isActivatedEIP(4895)) {
-      throw new Error('EIP 4895 is not activated')
+      throw EthereumJSErrorWithoutCode('EIP 4895 is not activated')
     }
 
     let result
@@ -451,14 +456,14 @@ export class Block {
     // Header has at most 2 uncles
     if (this.uncleHeaders.length > 2) {
       const msg = this._errorMsg('too many uncle headers')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     // Header does not count an uncle twice.
     const uncleHashes = this.uncleHeaders.map((header) => bytesToHex(header.hash()))
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
       const msg = this._errorMsg('duplicate uncles')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 

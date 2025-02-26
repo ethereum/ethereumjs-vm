@@ -11,6 +11,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_8,
+  EthereumJSErrorWithoutCode,
   GWEI_TO_WEI,
   KECCAK256_RLP,
   bigIntToAddressBytes,
@@ -269,7 +270,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
             )} expected=${bytesToHex(requestsHash!)}`,
           )
         const msg = _errorMsg('invalid requestsHash', vm, block)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
@@ -284,7 +285,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
           )
         }
         const msg = _errorMsg('invalid receiptTrie', vm, block)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
         if (vm.DEBUG) {
@@ -295,14 +296,14 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
           )
         }
         const msg = _errorMsg('invalid bloom', vm, block)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (result.gasUsed !== block.header.gasUsed) {
         if (vm.DEBUG) {
           debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
         }
         const msg = _errorMsg('invalid gasUsed', vm, block)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
         if (vm.DEBUG) {
@@ -319,7 +320,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
           vm,
           block,
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
@@ -331,7 +332,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       if (
         (await vm['_opts'].stateManager!.verifyPostState!(vm.evm.verkleAccessWitness)) === false
       ) {
-        throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
+        throw EthereumJSErrorWithoutCode(
+          `Verkle post state verification failed on block ${block.header.number}`,
+        )
       }
       debug(`Verkle post state verification succeeded`)
     }
@@ -402,7 +405,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
       const msg = _errorMsg('Invalid block with gas limit greater than (2^63 - 1)', vm, block)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     } else {
       if (vm.DEBUG) {
         debug(`Validate block`)
@@ -412,7 +415,9 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
         if (typeof (<any>vm.blockchain).validateHeader === 'function') {
           await (<any>vm.blockchain).validateHeader(block.header)
         } else {
-          throw new Error('cannot validate header: blockchain has no `validateHeader` method')
+          throw EthereumJSErrorWithoutCode(
+            'cannot validate header: blockchain has no `validateHeader` method',
+          )
         }
       }
       await block.validateData()
@@ -458,7 +463,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
 
   if (opts.reportPreimages === true) {
     if (vm.evm.stateManager.getAppliedKey === undefined) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         'applyBlock: evm.stateManager.getAppliedKey can not be undefined if reportPreimages is true',
       )
     }
@@ -520,7 +525,9 @@ export async function accumulateParentBlockHash(
   parentHash: Uint8Array,
 ) {
   if (!vm.common.isActivatedEIP(2935)) {
-    throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
+    throw EthereumJSErrorWithoutCode(
+      'Cannot call `accumulateParentBlockHash`: EIP 2935 is not active',
+    )
   }
   const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
   const historyServeWindow = vm.common.param('historyServeWindow')
@@ -557,7 +564,9 @@ export async function accumulateParentBlockHash(
 
 export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, timestamp: bigint) {
   if (!vm.common.isActivatedEIP(4788)) {
-    throw new Error('Cannot call `accumulateParentBeaconBlockRoot`: EIP 4788 is not active')
+    throw EthereumJSErrorWithoutCode(
+      'Cannot call `accumulateParentBeaconBlockRoot`: EIP 4788 is not active',
+    )
   }
   // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
   const historicalRootsLength = BigInt(vm.common.param('historicalRootsLength'))
@@ -632,7 +641,7 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     const gasLimitIsHigherThanBlock = maxGasLimit < tx.gasLimit + gasUsed
     if (gasLimitIsHigherThanBlock) {
       const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     // Run the tx through the VM

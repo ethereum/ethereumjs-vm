@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { setLengthRight } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, setLengthRight } from '@ethereumjs/util'
 
 import { InternalVerkleNode } from './internalNode.js'
 import { LeafVerkleNode } from './leafNode.js'
@@ -15,14 +15,14 @@ export function decodeRawVerkleNode(raw: Uint8Array[], verkleCrypto: VerkleCrypt
     case VerkleNodeType.Leaf:
       return LeafVerkleNode.fromRawNode(raw, verkleCrypto)
     default:
-      throw new Error('Invalid node type')
+      throw EthereumJSErrorWithoutCode('Invalid node type')
   }
 }
 
 export function decodeVerkleNode(raw: Uint8Array, verkleCrypto: VerkleCrypto) {
   const decoded = RLP.decode(Uint8Array.from(raw)) as Uint8Array[]
   if (!Array.isArray(decoded)) {
-    throw new Error('Invalid node')
+    throw EthereumJSErrorWithoutCode('Invalid node')
   }
   return decodeRawVerkleNode(decoded, verkleCrypto)
 }
@@ -54,7 +54,9 @@ export const createDefaultLeafVerkleValues: () => number[] = () => new Array(256
  */
 export const createCValues = (values: (Uint8Array | LeafVerkleNodeValue)[]) => {
   if (values.length !== 128)
-    throw new Error(`got wrong number of values, expected 128, got ${values.length}`)
+    throw EthereumJSErrorWithoutCode(
+      `got wrong number of values, expected 128, got ${values.length}`,
+    )
   const expandedValues: Uint8Array[] = new Array(256)
   for (let x = 0; x < 128; x++) {
     const retrievedValue = values[x]

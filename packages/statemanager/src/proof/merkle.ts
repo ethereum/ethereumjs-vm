@@ -6,6 +6,7 @@ import {
 } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import {
+  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
   KECCAK256_RLP,
@@ -204,35 +205,39 @@ export async function verifyMerkleStateProof(
     const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
     const nonce = unpadBytes(hexToBytes(proof.nonce))
     if (!equalsBytes(nonce, emptyBytes)) {
-      throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
+      throw EthereumJSErrorWithoutCode(`${notEmptyErrorMsg} (nonce is not zero)`)
     }
     const balance = unpadBytes(hexToBytes(proof.balance))
     if (!equalsBytes(balance, emptyBytes)) {
-      throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
+      throw EthereumJSErrorWithoutCode(`${notEmptyErrorMsg} (balance is not zero)`)
     }
     const storageHash = hexToBytes(proof.storageHash)
     if (!equalsBytes(storageHash, KECCAK256_RLP)) {
-      throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
+      throw EthereumJSErrorWithoutCode(
+        `${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`,
+      )
     }
     const codeHash = hexToBytes(proof.codeHash)
     if (!equalsBytes(codeHash, KECCAK256_NULL)) {
-      throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
+      throw EthereumJSErrorWithoutCode(
+        `${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`,
+      )
     }
   } else {
     const account = createAccountFromRLP(value)
     const { nonce, balance, storageRoot, codeHash } = account
     const invalidErrorMsg = 'Invalid proof provided:'
     if (nonce !== BigInt(proof.nonce)) {
-      throw new Error(`${invalidErrorMsg} nonce does not match`)
+      throw EthereumJSErrorWithoutCode(`${invalidErrorMsg} nonce does not match`)
     }
     if (balance !== BigInt(proof.balance)) {
-      throw new Error(`${invalidErrorMsg} balance does not match`)
+      throw EthereumJSErrorWithoutCode(`${invalidErrorMsg} balance does not match`)
     }
     if (!equalsBytes(storageRoot, hexToBytes(proof.storageHash))) {
-      throw new Error(`${invalidErrorMsg} storageHash does not match`)
+      throw EthereumJSErrorWithoutCode(`${invalidErrorMsg} storageHash does not match`)
     }
     if (!equalsBytes(codeHash, hexToBytes(proof.codeHash))) {
-      throw new Error(`${invalidErrorMsg} codeHash does not match`)
+      throw EthereumJSErrorWithoutCode(`${invalidErrorMsg} codeHash does not match`)
     }
   }
 
@@ -248,7 +253,7 @@ export async function verifyMerkleStateProof(
       32,
     )
     if (!equalsBytes(reportedValue, storageValue)) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Reported trie value does not match storage, key: ${stProof.key}, reported: ${bytesToHex(
           reportedValue,
         )}, actual: ${bytesToHex(storageValue)}`,

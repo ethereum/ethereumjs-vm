@@ -1,4 +1,5 @@
 import {
+  EthereumJSErrorWithoutCode,
   TypeOutput,
   bigIntToHex,
   bytesToHex,
@@ -267,7 +268,7 @@ export class Debug {
     }
 
     if (this.vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const opts = validateTracerConfig(tracerOpts)
@@ -358,7 +359,7 @@ export class Debug {
     const [blockHash, txIndex, account, startKey, limit] = params
 
     if (this.vm === undefined) {
-      throw new Error('Missing VM.')
+      throw EthereumJSErrorWithoutCode('Missing VM.')
     }
 
     let block: Block
@@ -426,7 +427,8 @@ export class Debug {
    */
   async getRawReceipts(params: [string]) {
     const [blockOpt] = params
-    if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
+    if (!this.service.execution.receiptsManager)
+      throw EthereumJSErrorWithoutCode('missing receiptsManager')
     const block = await getBlockByOption(blockOpt, this.chain)
     const receipts = await this.service.execution.receiptsManager.getReceipts(
       block.hash(),
@@ -441,7 +443,8 @@ export class Debug {
    */
   async getRawTransaction(params: [PrefixedHexString]) {
     const [txHash] = params
-    if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
+    if (!this.service.execution.receiptsManager)
+      throw EthereumJSErrorWithoutCode('missing receiptsManager')
     const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
       hexToBytes(txHash),
     )

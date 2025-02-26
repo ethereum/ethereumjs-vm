@@ -1,4 +1,4 @@
-import { bytesToHex } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
 
 import type { TransientStorageInterface } from './types.js'
 import type { Address } from '@ethereumjs/util'
@@ -52,11 +52,11 @@ export class TransientStorage implements TransientStorageInterface {
    */
   public put(addr: Address, key: Uint8Array, value: Uint8Array) {
     if (key.length !== 32) {
-      throw new Error('Transient storage key must be 32 bytes long')
+      throw EthereumJSErrorWithoutCode('Transient storage key must be 32 bytes long')
     }
 
     if (value.length > 32) {
-      throw new Error('Transient storage value cannot be longer than 32 bytes')
+      throw EthereumJSErrorWithoutCode('Transient storage value cannot be longer than 32 bytes')
     }
 
     const addrString = addr.toString()
@@ -81,7 +81,7 @@ export class TransientStorage implements TransientStorageInterface {
    * Commit all the changes since the last checkpoint
    */
   public commit(): void {
-    if (this._indices.length === 0) throw new Error('Nothing to commit')
+    if (this._indices.length === 0) throw EthereumJSErrorWithoutCode('Nothing to commit')
     // by discarding the length of the array from the last time checkpoint was called, all changes are included in the last stack
     this._indices.pop()
   }
@@ -98,7 +98,7 @@ export class TransientStorage implements TransientStorageInterface {
    */
   public revert() {
     const lastCheckpoint = this._indices.pop()
-    if (typeof lastCheckpoint === 'undefined') throw new Error('Nothing to revert')
+    if (typeof lastCheckpoint === 'undefined') throw EthereumJSErrorWithoutCode('Nothing to revert')
 
     for (let i = this._changeJournal.length - 1; i >= lastCheckpoint; i--) {
       const { key, prevValue, addr } = this._changeJournal[i]

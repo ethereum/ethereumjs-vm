@@ -1,6 +1,7 @@
 import {
   Address,
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   SECP256K1_ORDER_DIV_2,
   bigIntMax,
   bigIntToUnpaddedBytes,
@@ -85,7 +86,7 @@ export function toCreationAddress(tx: LegacyTxInterface): boolean {
 export function hash(tx: LegacyTxInterface): Uint8Array {
   if (!tx.isSigned()) {
     const msg = errorMsg(tx, 'Cannot call hash method if transaction is not signed')
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 
   const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
@@ -111,7 +112,7 @@ export function validateHighS(tx: LegacyTxInterface): void {
       tx,
       'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid',
     )
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 }
 
@@ -141,13 +142,13 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
     return sender
   } catch (e: any) {
     const msg = errorMsg(tx, 'Invalid Signature')
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 }
 
 export function getEffectivePriorityFee(gasPrice: bigint, baseFee: bigint | undefined): bigint {
   if (baseFee !== undefined && baseFee > gasPrice) {
-    throw new Error('Tx cannot pay baseFee')
+    throw EthereumJSErrorWithoutCode('Tx cannot pay baseFee')
   }
 
   if (baseFee === undefined) {
@@ -234,7 +235,7 @@ export function sign(
   if (privateKey.length !== 32) {
     // TODO figure out this errorMsg logic how this diverges on other txs
     const msg = errorMsg(tx, 'Private key must be 32 bytes in length.')
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 
   // TODO (Jochem, 05 nov 2024): figure out what this hack does and clean it up

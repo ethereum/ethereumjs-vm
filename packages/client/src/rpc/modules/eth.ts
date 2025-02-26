@@ -17,6 +17,7 @@ import {
   BIGINT_1,
   BIGINT_100,
   BIGINT_NEG1,
+  EthereumJSErrorWithoutCode,
   TypeOutput,
   bigIntMax,
   bigIntToHex,
@@ -496,7 +497,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -556,7 +557,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
@@ -633,7 +634,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -728,7 +729,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -767,7 +768,7 @@ export class Eth {
       }
     }
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -844,7 +845,7 @@ export class Eth {
    */
   async getTransactionByHash(params: [PrefixedHexString]) {
     const [txHash] = params
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
     const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
     if (!result) return null
     const [_receipt, blockHash, txIndex] = result
@@ -866,7 +867,7 @@ export class Eth {
     else block = await getBlockByOption('latest', this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -931,7 +932,7 @@ export class Eth {
       return null
     }
     const blockHash = block.hash()
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
     const result = await this.receiptsManager.getReceipts(blockHash, true, true)
     if (result.length === 0) return []
     const parentBlock = await this._chain.getBlock(block.header.parentHash)
@@ -988,7 +989,7 @@ export class Eth {
   async getTransactionReceipt(params: [PrefixedHexString]) {
     const [txHash] = params
 
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
     const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
     if (!result) return null
     const [receipt, blockHash, txIndex, logIndex] = result
@@ -1042,7 +1043,7 @@ export class Eth {
    */
   async getLogs(params: [GetLogsParams]) {
     const { fromBlock, toBlock, blockHash, address, topics } = params[0]
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
     if (blockHash !== undefined && (fromBlock !== undefined || toBlock !== undefined)) {
       throw {
         code: INVALID_PARAMS,
@@ -1231,7 +1232,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -1246,7 +1247,9 @@ export class Eth {
     } else if (vm.stateManager instanceof StatelessVerkleStateManager) {
       proof = await getVerkleStateProof(vm.stateManager, address, slots)
     } else {
-      throw new Error('getProof RPC method not supported with the StateManager provided')
+      throw EthereumJSErrorWithoutCode(
+        'getProof RPC method not supported with the StateManager provided',
+      )
     }
 
     for (const p of proof.storageProof) {

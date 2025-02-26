@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bitsToBytes, bytesToBits } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bitsToBytes, bytesToBits } from '@ethereumjs/util'
 
 import { BinaryNodeType } from './types.js'
 
@@ -17,13 +17,13 @@ export class InternalBinaryNode {
   static fromRawNode(rawNode: Uint8Array[]): InternalBinaryNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== BinaryNodeType.Internal) {
-      throw new Error('Invalid node type')
+      throw EthereumJSErrorWithoutCode('Invalid node type')
     }
 
     // The length of the rawNode should be the # of children * 2 (for hash and path) + 1 for the node type
 
     if (rawNode.length !== 2 * 2 + 1) {
-      throw new Error('Invalid node length')
+      throw EthereumJSErrorWithoutCode('Invalid node length')
     }
     const [, leftChildHash, rightChildHash, leftChildRawPath, rightChildRawPath] = rawNode
 
@@ -32,13 +32,13 @@ export class InternalBinaryNode {
       const decoded = RLP.decode(rawPath)
 
       if (!Array.isArray(decoded) || decoded.length !== 2) {
-        throw new Error('Invalid RLP encoding for child path')
+        throw EthereumJSErrorWithoutCode('Invalid RLP encoding for child path')
       }
 
       const [encodedLength, encodedPath] = decoded as Uint8Array[]
 
       if (encodedLength.length !== 1) {
-        throw new Error('Invalid path length encoding')
+        throw EthereumJSErrorWithoutCode('Invalid path length encoding')
       }
 
       const pathLength = encodedLength[0]
@@ -62,7 +62,7 @@ export class InternalBinaryNode {
    */
   static create(children?: (ChildBinaryNode | null)[]): InternalBinaryNode {
     if (children !== undefined && children.length !== 2) {
-      throw new Error('Internal node must have 2 children')
+      throw EthereumJSErrorWithoutCode('Internal node must have 2 children')
     }
     return new InternalBinaryNode({ children })
   }

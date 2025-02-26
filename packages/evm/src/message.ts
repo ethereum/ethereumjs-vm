@@ -1,4 +1,4 @@
-import { BIGINT_0, createZeroAddress } from '@ethereumjs/util'
+import { BIGINT_0, EthereumJSErrorWithoutCode, createZeroAddress } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
 import type { EOFEnv } from './types.js'
@@ -95,7 +95,7 @@ export class Message {
     this.blobVersionedHashes = opts.blobVersionedHashes
     this.accessWitness = opts.accessWitness
     if (this.value < 0) {
-      throw new Error(`value field cannot be negative, received ${this.value}`)
+      throw EthereumJSErrorWithoutCode(`value field cannot be negative, received ${this.value}`)
     }
   }
 
@@ -105,7 +105,7 @@ export class Message {
   get codeAddress(): Address {
     const codeAddress = this._codeAddress ?? this.to
     if (!codeAddress) {
-      throw new Error('Missing codeAddress')
+      throw EthereumJSErrorWithoutCode('Missing codeAddress')
     }
     return codeAddress
   }

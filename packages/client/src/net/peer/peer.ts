@@ -1,4 +1,4 @@
-import { BIGINT_0, short } from '@ethereumjs/util'
+import { BIGINT_0, EthereumJSErrorWithoutCode, short } from '@ethereumjs/util'
 import { EventEmitter } from 'eventemitter3'
 
 import { BoundEthProtocol, BoundSnapProtocol } from '../protocol/index.js'
@@ -177,7 +177,7 @@ export abstract class Peer extends EventEmitter {
 
       this.snap = <BoundSnapProtocol>bound
     } else {
-      throw new Error(`addProtocol: ${protocol.name} protocol not supported`)
+      throw EthereumJSErrorWithoutCode(`addProtocol: ${protocol.name} protocol not supported`)
     }
 
     this.boundProtocols.push(bound)

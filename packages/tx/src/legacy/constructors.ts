@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { validateNoLeadingZeroes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, validateNoLeadingZeroes } from '@ethereumjs/util'
 
 import { LegacyTx } from './tx.js'
 
@@ -27,7 +27,7 @@ export function createLegacyTxFromBytesArray(values: TxValuesArray, opts: TxOpti
   // If length is not 6, it has length 9. If v/r/s are empty Uint8Arrays, it is still an unsigned transaction
   // This happens if you get the RLP data from `raw()`
   if (values.length !== 6 && values.length !== 9) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'Invalid transaction. Only expecting 6 values (for unsigned tx) or 9 values (for signed tx).',
     )
   }
@@ -62,7 +62,7 @@ export function createLegacyTxFromRLP(serialized: Uint8Array, opts: TxOptions = 
   const values = RLP.decode(serialized)
 
   if (!Array.isArray(values)) {
-    throw new Error('Invalid serialized tx input. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid serialized tx input. Must be array')
   }
 
   return createLegacyTxFromBytesArray(values as TxValuesArray, opts)

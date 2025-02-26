@@ -5,6 +5,7 @@ import {
   BIGINT_1,
   BIGINT_100,
   BIGINT_2EXP256,
+  EthereumJSErrorWithoutCode,
   Lock,
   bigIntToBytes,
   bytesToBigInt,
@@ -74,20 +75,20 @@ type SkeletonSubchainRLP = [head: Uint8Array, tail: Uint8Array, next: Uint8Array
  * the current sync cycle was (partially) reorged, thus the skeleton syncer
  * should abort and restart with the new state.
  */
-export const errSyncReorged = new Error('sync reorged')
+export const errSyncReorged = EthereumJSErrorWithoutCode('sync reorged')
 
 /**
  * errReorgDenied is returned if an attempt is made to extend the beacon chain
  * with a new header, but it does not link up to the existing sync.
  */
-export const errReorgDenied = new Error('non-forced head reorg denied')
+export const errReorgDenied = EthereumJSErrorWithoutCode('non-forced head reorg denied')
 
 /**
  * errSyncMerged is an internal helper error to signal that the current sync
  * cycle merged with a previously aborted subchain, thus the skeleton syncer
  * should abort and restart with the new state.
  */
-export const errSyncMerged = new Error('sync merged')
+export const errSyncMerged = EthereumJSErrorWithoutCode('sync merged')
 
 const zeroBlockHash = new Uint8Array(32)
 /**

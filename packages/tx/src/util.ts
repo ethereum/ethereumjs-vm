@@ -1,4 +1,5 @@
 import {
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   MAX_UINT64,
   type PrefixedHexString,
@@ -29,7 +30,7 @@ import type { Common } from '@ethereumjs/common'
 export function checkMaxInitCodeSize(common: Common, length: number) {
   const maxInitCodeSize = common.param('maxInitCodeSize')
   if (maxInitCodeSize && BigInt(length) > maxInitCodeSize) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       `the initcode size of this transaction is too large: it is ${length} while the max is ${common.param(
         'maxInitCodeSize',
       )}`,
@@ -87,16 +88,20 @@ export class AccessLists {
       const address = accessListItem[0]
       const storageSlots = accessListItem[1]
       if ((<any>accessListItem)[2] !== undefined) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.',
         )
       }
       if (address.length !== 20) {
-        throw new Error('Invalid EIP-2930 transaction: address length should be 20 bytes')
+        throw EthereumJSErrorWithoutCode(
+          'Invalid EIP-2930 transaction: address length should be 20 bytes',
+        )
       }
       for (let storageSlot = 0; storageSlot < storageSlots.length; storageSlot++) {
         if (storageSlots[storageSlot].length !== 32) {
-          throw new Error('Invalid EIP-2930 transaction: storage slot length should be 32 bytes')
+          throw EthereumJSErrorWithoutCode(
+            'Invalid EIP-2930 transaction: storage slot length should be 32 bytes',
+          )
         }
       }
     }
@@ -150,7 +155,9 @@ export class AuthorizationLists {
         const item: AuthorizationListItem = authorizationList[i]
         for (const key of jsonItems) {
           if (item[key as keyof typeof item] === undefined) {
-            throw new Error(`EIP-7702 authorization list invalid: ${key} is not defined`)
+            throw EthereumJSErrorWithoutCode(
+              `EIP-7702 authorization list invalid: ${key} is not defined`,
+            )
           }
         }
         const chainId = hexToBytes(item.chainId)
@@ -196,7 +203,7 @@ export class AuthorizationLists {
 
   public static verifyAuthorizationList(authorizationList: AuthorizationListBytes) {
     if (authorizationList.length === 0) {
-      throw new Error('Invalid EIP-7702 transaction: authorization list is empty')
+      throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: authorization list is empty')
     }
     for (let key = 0; key < authorizationList.length; key++) {
       const authorizationListItem = authorizationList[key]
@@ -208,25 +215,27 @@ export class AuthorizationLists {
       const s = authorizationListItem[5]
       validateNoLeadingZeroes({ yParity, r, s, nonce, chainId })
       if (address.length !== 20) {
-        throw new Error('Invalid EIP-7702 transaction: address length should be 20 bytes')
+        throw EthereumJSErrorWithoutCode(
+          'Invalid EIP-7702 transaction: address length should be 20 bytes',
+        )
       }
       if (bytesToBigInt(chainId) > MAX_INTEGER) {
-        throw new Error('Invalid EIP-7702 transaction: chainId exceeds 2^256 - 1')
+        throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: chainId exceeds 2^256 - 1')
       }
       if (bytesToBigInt(nonce) > MAX_UINT64) {
-        throw new Error('Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1')
+        throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1')
       }
       const yParityBigInt = bytesToBigInt(yParity)
       if (yParityBigInt >= BigInt(2 ** 8)) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           'Invalid EIP-7702 transaction: yParity should be fit within 1 byte (0 - 255)',
         )
       }
       if (bytesToBigInt(r) > MAX_INTEGER) {
-        throw new Error('Invalid EIP-7702 transaction: r exceeds 2^256 - 1')
+        throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: r exceeds 2^256 - 1')
       }
       if (bytesToBigInt(s) > MAX_INTEGER) {
-        throw new Error('Invalid EIP-7702 transaction: s exceeds 2^256 - 1')
+        throw EthereumJSErrorWithoutCode('Invalid EIP-7702 transaction: s exceeds 2^256 - 1')
       }
     }
   }
@@ -260,7 +269,7 @@ export function validateNotArray(values: { [key: string]: any }) {
   for (const [key, value] of Object.entries(values)) {
     if (txDataKeys.includes(key)) {
       if (Array.isArray(value)) {
-        throw new Error(`${key} cannot be an array`)
+        throw EthereumJSErrorWithoutCode(`${key} cannot be an array`)
       }
     }
   }

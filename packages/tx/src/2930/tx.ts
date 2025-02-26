@@ -1,5 +1,6 @@
 import {
   BIGINT_27,
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -86,7 +87,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
     const { chainId, accessList, gasPrice } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
@@ -94,7 +95,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
 
     // EIP-2718 check is done in Common
     if (!this.common.isActivatedEIP(2930)) {
-      throw new Error('EIP-2930 not enabled on Common')
+      throw EthereumJSErrorWithoutCode('EIP-2930 not enabled on Common')
     }
     this.activeCapabilities = this.activeCapabilities.concat([2718, 2930])
 
@@ -111,7 +112,7 @@ export class AccessList2930Tx implements TransactionInterface<TransactionType.Ac
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = Legacy.errorMsg(this, 'gasLimit * gasPrice cannot exceed MAX_INTEGER')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     EIP2718.validateYParity(this)

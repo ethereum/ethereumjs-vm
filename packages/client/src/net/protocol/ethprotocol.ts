@@ -13,6 +13,7 @@ import {
 } from '@ethereumjs/tx'
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
@@ -91,7 +92,7 @@ export interface EthProtocolMethods {
 }
 
 function exhaustiveTypeGuard(_value: never, errorMsg: string): never {
-  throw new Error(errorMsg)
+  throw EthereumJSErrorWithoutCode(errorMsg)
 }
 
 /**

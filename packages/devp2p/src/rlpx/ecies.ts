@@ -1,5 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToInt, concatBytes, hexToBytes, intToBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bytesToInt,
+  concatBytes,
+  hexToBytes,
+  intToBytes,
+} from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -399,7 +405,7 @@ export class ECIES {
   }
 
   parseBody(data: Uint8Array): Uint8Array | undefined {
-    if (this._bodySize === null) throw new Error('need to parse header first')
+    if (this._bodySize === null) throw EthereumJSErrorWithoutCode('need to parse header first')
 
     const body = data.subarray(0, -16)
     const mac = data.subarray(-16)

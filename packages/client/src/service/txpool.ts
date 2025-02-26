@@ -11,6 +11,7 @@ import {
   Address,
   BIGINT_0,
   BIGINT_2,
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -246,7 +247,7 @@ export class TxPool {
       existingTxGasPrice.maxFee +
       (existingTxGasPrice.maxFee * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
     if (newGasPrice.tip < minTipCap || newGasPrice.maxFee < minFeeCap) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `replacement gas too low, got tip ${newGasPrice.tip}, min: ${minTipCap}, got fee ${newGasPrice.maxFee}, min: ${minFeeCap}`,
       )
     }
@@ -256,7 +257,7 @@ export class TxPool {
         existingTx.maxFeePerBlobGas +
         (existingTx.maxFeePerBlobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
       if (addedTx.maxFeePerBlobGas < minblobGasFee) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `replacement blob gas too low, got: ${addedTx.maxFeePerBlobGas}, min: ${minblobGasFee}`,
         )
       }
@@ -269,10 +270,10 @@ export class TxPool {
    */
   private async validate(tx: TypedTransaction, isLocalTransaction: boolean = false) {
     if (!tx.isSigned()) {
-      throw new Error('Attempting to add tx to txpool which is not signed')
+      throw EthereumJSErrorWithoutCode('Attempting to add tx to txpool which is not signed')
     }
     if (tx.data.length > TX_MAX_DATA_SIZE) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Tx is too large (${tx.data.length} bytes) and exceeds the max data size of ${TX_MAX_DATA_SIZE} bytes`,
       )
     }
@@ -283,11 +284,13 @@ export class TxPool {
     if (!isLocalTransaction) {
       const txsInPool = this.txsInPool
       if (txsInPool >= MAX_POOL_SIZE) {
-        throw new Error('Cannot add tx: pool is full')
+        throw EthereumJSErrorWithoutCode('Cannot add tx: pool is full')
       }
       // Local txs are not checked against MIN_GAS_PRICE
       if (currentTip < MIN_GAS_PRICE) {
-        throw new Error(`Tx does not pay the minimum gas price of ${MIN_GAS_PRICE}`)
+        throw EthereumJSErrorWithoutCode(
+          `Tx does not pay the minimum gas price of ${MIN_GAS_PRICE}`,
+        )
       }
     }
     const senderAddress = tx.getSenderAddress()
@@ -295,7 +298,7 @@ export class TxPool {
     const inPool = this.pool.get(sender)
     if (inPool) {
       if (!isLocalTransaction && inPool.length >= MAX_TXS_PER_ACCOUNT) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `Cannot add tx for ${senderAddress}: already have max amount of txs for this account`,
         )
       }
@@ -303,7 +306,9 @@ export class TxPool {
       const existingTxn = inPool.find((poolObj) => poolObj.tx.nonce === tx.nonce)
       if (existingTxn) {
         if (equalsBytes(existingTxn.tx.hash(), tx.hash())) {
-          throw new Error(`${bytesToHex(tx.hash())}: this transaction is already in the TxPool`)
+          throw EthereumJSErrorWithoutCode(
+            `${bytesToHex(tx.hash())}: this transaction is already in the TxPool`,
+          )
         }
         this.validateTxGasBump(existingTxn.tx, tx)
       }
@@ -311,13 +316,13 @@ export class TxPool {
     const block = await this.service.chain.getCanonicalHeadHeader()
     if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BIGINT_0) {
       if (currentGasPrice.maxFee < block.baseFeePerGas / BIGINT_2 && !isLocalTransaction) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`,
         )
       }
     }
     if (tx.gasLimit > block.gasLimit) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Tx gaslimit of ${tx.gasLimit} exceeds block gas limit of ${block.gasLimit} (exceeds last block gas limit)`,
       )
     }
@@ -331,13 +336,13 @@ export class TxPool {
       account = new Account()
     }
     if (account.nonce > tx.nonce) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`,
       )
     }
     const minimumBalance = tx.value + currentGasPrice.maxFee * tx.gasLimit
     if (account.balance < minimumBalance) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `0x${sender} does not have enough balance to cover transaction costs, need ${minimumBalance}, but have ${account.balance} (insufficient balance)`,
       )
     }
@@ -778,7 +783,7 @@ export class TxPool {
         tip: tx.maxPriorityFeePerGas,
       }
     } else {
-      throw new Error(`tx of type ${(tx as TypedTransaction).type} unknown`)
+      throw EthereumJSErrorWithoutCode(`tx of type ${(tx as TypedTransaction).type} unknown`)
     }
   }
 

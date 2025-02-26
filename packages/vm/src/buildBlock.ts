@@ -14,6 +14,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
+  EthereumJSErrorWithoutCode,
   GWEI_TO_WEI,
   KECCAK256_RLP,
   TypeOutput,
@@ -129,10 +130,10 @@ export class BlockBuilder {
    */
   private checkStatus() {
     if (this.blockStatus.status === BuildStatus.Build) {
-      throw new Error('Block has already been built')
+      throw EthereumJSErrorWithoutCode('Block has already been built')
     }
     if (this.blockStatus.status === BuildStatus.Reverted) {
-      throw new Error('State has already been reverted')
+      throw EthereumJSErrorWithoutCode('State has already been reverted')
     }
   }
 
@@ -237,7 +238,9 @@ export class BlockBuilder {
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (tx.gasLimit > blockGasRemaining) {
-      throw new Error('tx has a higher gas limit than the remaining gas in the block')
+      throw EthereumJSErrorWithoutCode(
+        'tx has a higher gas limit than the remaining gas in the block',
+      )
     }
     let blobGasUsed = undefined
     if (tx instanceof Blob4844Tx) {
@@ -251,12 +254,12 @@ export class BlockBuilder {
         // TODO: verify if we want this, do we want to allow the block builder to accept blob txs without the actual blobs?
         // (these must have at least one `blobVersionedHashes`, this is verified at tx-level)
         if (allowNoBlobs !== true) {
-          throw new Error('blobs missing for 4844 transaction')
+          throw EthereumJSErrorWithoutCode('blobs missing for 4844 transaction')
         }
       }
 
       if (this.blobGasUsed + BigInt(blobTx.numBlobs()) * blobGasPerBlob > blobGasLimit) {
-        throw new Error('block blob gas limit reached')
+        throw EthereumJSErrorWithoutCode('block blob gas limit reached')
       }
 
       blobGasUsed = this.blobGasUsed

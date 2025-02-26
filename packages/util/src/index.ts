@@ -4,6 +4,11 @@
 export * from './constants.js'
 
 /**
+ * Errors
+ */
+export * from './errors.js'
+
+/**
  * Units helpers
  */
 export * from './units.js'

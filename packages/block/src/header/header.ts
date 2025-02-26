@@ -6,6 +6,7 @@ import {
   BIGINT_1,
   BIGINT_2,
   BIGINT_7,
+  EthereumJSErrorWithoutCode,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   SHA256_NULL,
@@ -79,7 +80,7 @@ export class BlockHeader {
       const msg = this._errorMsg(
         'The prevRandao parameter can only be accessed when EIP-4399 is activated',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     return this.mixHash
   }
@@ -182,33 +183,39 @@ export class BlockHeader {
       toType(headerData.requestsHash, TypeOutput.Uint8Array) ?? hardforkDefaults.requestsHash
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
-      throw new Error('A base fee for a block can only be set with EIP1559 being activated')
+      throw EthereumJSErrorWithoutCode(
+        'A base fee for a block can only be set with EIP1559 being activated',
+      )
     }
 
     if (!this.common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         'A withdrawalsRoot for a header can only be provided with EIP4895 being activated',
       )
     }
 
     if (!this.common.isActivatedEIP(4844)) {
       if (blobGasUsed !== undefined) {
-        throw new Error('blob gas used can only be provided with EIP4844 activated')
+        throw EthereumJSErrorWithoutCode(
+          'blob gas used can only be provided with EIP4844 activated',
+        )
       }
 
       if (excessBlobGas !== undefined) {
-        throw new Error('excess blob gas can only be provided with EIP4844 activated')
+        throw EthereumJSErrorWithoutCode(
+          'excess blob gas can only be provided with EIP4844 activated',
+        )
       }
     }
 
     if (!this.common.isActivatedEIP(4788) && parentBeaconBlockRoot !== undefined) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         'A parentBeaconBlockRoot for a header can only be provided with EIP4788 being activated',
       )
     }
 
     if (!this.common.isActivatedEIP(7685) && requestsHash !== undefined) {
-      throw new Error('requestsHash can only be provided with EIP 7685 activated')
+      throw EthereumJSErrorWithoutCode('requestsHash can only be provided with EIP 7685 activated')
     }
 
     this.parentHash = parentHash
@@ -262,32 +269,32 @@ export class BlockHeader {
 
     if (parentHash.length !== 32) {
       const msg = this._errorMsg(`parentHash must be 32 bytes, received ${parentHash.length} bytes`)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (stateRoot.length !== 32) {
       const msg = this._errorMsg(`stateRoot must be 32 bytes, received ${stateRoot.length} bytes`)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (transactionsTrie.length !== 32) {
       const msg = this._errorMsg(
         `transactionsTrie must be 32 bytes, received ${transactionsTrie.length} bytes`,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (receiptTrie.length !== 32) {
       const msg = this._errorMsg(
         `receiptTrie must be 32 bytes, received ${receiptTrie.length} bytes`,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (mixHash.length !== 32) {
       const msg = this._errorMsg(`mixHash must be 32 bytes, received ${mixHash.length} bytes`)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (nonce.length !== 8) {
       const msg = this._errorMsg(`nonce must be 8 bytes, received ${nonce.length} bytes`)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     // check if the block used too much gas
@@ -295,14 +302,14 @@ export class BlockHeader {
       const msg = this._errorMsg(
         `Invalid block: too much gas used. Used: ${this.gasUsed}, gas limit: ${this.gasLimit}`,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     // Validation for EIP-1559 blocks
     if (this.common.isActivatedEIP(1559)) {
       if (typeof this.baseFeePerGas !== 'bigint') {
         const msg = this._errorMsg('EIP1559 block has no base fee field')
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       const londonHfBlock = this.common.hardforkBlock(Hardfork.London)
       if (
@@ -313,7 +320,7 @@ export class BlockHeader {
         const initialBaseFee = this.common.param('initialBaseFee')
         if (this.baseFeePerGas !== initialBaseFee) {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
-          throw new Error(msg)
+          throw EthereumJSErrorWithoutCode(msg)
         }
       }
     }
@@ -321,20 +328,20 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(4895)) {
       if (this.withdrawalsRoot === undefined) {
         const msg = this._errorMsg('EIP4895 block has no withdrawalsRoot field')
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (this.withdrawalsRoot?.length !== 32) {
         const msg = this._errorMsg(
           `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`,
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
     if (this.common.isActivatedEIP(4788)) {
       if (this.parentBeaconBlockRoot === undefined) {
         const msg = this._errorMsg('EIP4788 block has no parentBeaconBlockRoot field')
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (this.parentBeaconBlockRoot?.length !== 32) {
         const msg = this._errorMsg(
@@ -342,14 +349,14 @@ export class BlockHeader {
             this.parentBeaconBlockRoot!.length
           } bytes`,
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
     if (this.common.isActivatedEIP(7685)) {
       if (this.requestsHash === undefined) {
         const msg = this._errorMsg('EIP7685 block has no requestsHash field')
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
   }
@@ -367,7 +374,7 @@ export class BlockHeader {
       if (number > BIGINT_0 && this.extraData.length > this.common.param('maxExtraDataSize')) {
         // Check length of data on all post-genesis blocks
         const msg = this._errorMsg('invalid amount of extra data')
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
@@ -379,7 +386,7 @@ export class BlockHeader {
           const msg = this._errorMsg(
             `extraData must be ${minLength} bytes on non-epoch transition blocks, received ${this.extraData.length} bytes`,
           )
-          throw new Error(msg)
+          throw EthereumJSErrorWithoutCode(msg)
         }
       } else {
         const signerLength = this.extraData.length - minLength
@@ -387,20 +394,20 @@ export class BlockHeader {
           const msg = this._errorMsg(
             `invalid signer list length in extraData, received signer length of ${signerLength} (not divisible by 20)`,
           )
-          throw new Error(msg)
+          throw EthereumJSErrorWithoutCode(msg)
         }
         // coinbase (beneficiary) on epoch transition
         if (!this.coinbase.isZero()) {
           const msg = this._errorMsg(
             `coinbase must be filled with zeros on epoch transition blocks, received ${this.coinbase}`,
           )
-          throw new Error(msg)
+          throw EthereumJSErrorWithoutCode(msg)
         }
       }
       // MixHash format
       if (!equalsBytes(this.mixHash, new Uint8Array(32))) {
         const msg = this._errorMsg(`mixHash must be filled with zeros, received ${this.mixHash}`)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
     // Validation for PoS blocks (EIP-3675)
@@ -433,7 +440,7 @@ export class BlockHeader {
       }
       if (error) {
         const msg = this._errorMsg(`Invalid PoS block: ${errorMsg}`)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
   }
@@ -467,14 +474,14 @@ export class BlockHeader {
       const msg = this._errorMsg(
         `gas limit increased too much. Gas limit: ${gasLimit}, max gas limit: ${maxGasLimit}`,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (gasLimit <= minGasLimit) {
       const msg = this._errorMsg(
         `gas limit decreased too much. Gas limit: ${gasLimit}, min gas limit: ${minGasLimit}`,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (gasLimit < this.common.param('minGasLimit')) {
@@ -483,7 +490,7 @@ export class BlockHeader {
           'minGasLimit',
         )}`,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -495,7 +502,7 @@ export class BlockHeader {
       const msg = this._errorMsg(
         'calcNextBaseFee() can only be called with EIP1559 being activated',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     let nextBaseFee: bigint
     const elasticity = this.common.param('elasticityMultiplier')
@@ -530,7 +537,7 @@ export class BlockHeader {
    */
   getBlobGasPrice(): bigint {
     if (this.excessBlobGas === undefined) {
-      throw new Error('header must have excessBlobGas field populated')
+      throw EthereumJSErrorWithoutCode('header must have excessBlobGas field populated')
     }
     return computeBlobGasPrice(this.excessBlobGas, this.common)
   }
@@ -651,13 +658,13 @@ export class BlockHeader {
   ethashCanonicalDifficulty(parentBlockHeader: BlockHeader): bigint {
     if (this.common.consensusType() !== ConsensusType.ProofOfWork) {
       const msg = this._errorMsg('difficulty calculation is only supported on PoW chains')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (this.common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
       const msg = this._errorMsg(
         'difficulty calculation currently only supports the ethash algorithm',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
@@ -785,7 +792,7 @@ export class BlockHeader {
           this.extraData,
         )})`,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 

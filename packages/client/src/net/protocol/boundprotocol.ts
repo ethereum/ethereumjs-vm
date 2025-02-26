@@ -1,4 +1,4 @@
-import { Lock } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, Lock } from '@ethereumjs/util'
 
 import { Event } from '../../types.js'
 
@@ -74,7 +74,7 @@ export class BoundProtocol {
           // Expected message queue growth is in the single digits
           // so this adds a guard here if something goes wrong
           if (this.messageQueue.length >= 50) {
-            const error = new Error('unexpected message queue growth for peer')
+            const error = EthereumJSErrorWithoutCode('unexpected message queue growth for peer')
             this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
           }
         }
@@ -117,7 +117,7 @@ export class BoundProtocol {
     try {
       data = this.protocol.decode(message, incoming.payload)
     } catch (e: any) {
-      error = new Error(`Could not decode message ${message.name}: ${e}`)
+      error = EthereumJSErrorWithoutCode(`Could not decode message ${message.name}: ${e}`)
     }
     const resolver = this.resolvers.get(incoming.code)
     if (resolver !== undefined) {
@@ -163,7 +163,7 @@ export class BoundProtocol {
       const encoded = this.protocol.encode(message, args)
       this.sender.sendMessage(message.code, encoded)
     } else {
-      throw new Error(`Unknown message: ${name}`)
+      throw EthereumJSErrorWithoutCode(`Unknown message: ${name}`)
     }
     return message
   }
@@ -207,7 +207,7 @@ export class BoundProtocol {
       resolver.timeout = setTimeout(() => {
         resolver.timeout = null
         this.resolvers.delete(message.response!)
-        resolver.reject(new Error(`Request timed out after ${this.timeout}ms`))
+        resolver.reject(EthereumJSErrorWithoutCode(`Request timed out after ${this.timeout}ms`))
       }, this.timeout)
     })
   }

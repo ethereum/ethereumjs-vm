@@ -3,6 +3,7 @@ import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
+  EthereumJSErrorWithoutCode,
   bytesToUnprefixedHex,
   concatBytes,
   createAccount,
@@ -319,7 +320,7 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
+      throw EthereumJSErrorWithoutCode('Storage key must be 32 bytes long')
     }
     const cachedValue = this._caches?.storage?.get(address, key)
     if (cachedValue !== undefined) {
@@ -402,16 +403,16 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
+      throw EthereumJSErrorWithoutCode('Storage key must be 32 bytes long')
     }
 
     if (value.length > 32) {
-      throw new Error('Storage value cannot be longer than 32 bytes')
+      throw EthereumJSErrorWithoutCode('Storage value cannot be longer than 32 bytes')
     }
 
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error('putStorage() called on non-existing account')
+      throw EthereumJSErrorWithoutCode('putStorage() called on non-existing account')
     }
 
     value = unpadBytes(value)
@@ -562,7 +563,7 @@ export class MerkleStateManager implements StateManagerInterface {
     if (!equalsBytes(stateRoot, this._trie.EMPTY_TRIE_ROOT)) {
       const hasRoot = await this._trie.checkRoot(stateRoot)
       if (!hasRoot) {
-        throw new Error('State trie does not contain state root')
+        throw EthereumJSErrorWithoutCode('State trie does not contain state root')
       }
     }
 
@@ -584,7 +585,7 @@ export class MerkleStateManager implements StateManagerInterface {
     await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error(`dumpStorage f() can only be called for an existing account`)
+      throw EthereumJSErrorWithoutCode(`dumpStorage f() can only be called for an existing account`)
     }
     const trie = this._getStorageTrie(address, account)
 
@@ -604,13 +605,13 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
     if (!Number.isSafeInteger(limit) || limit < 0) {
-      throw new Error(`Limit is not a proper uint.`)
+      throw EthereumJSErrorWithoutCode(`Limit is not a proper uint.`)
     }
 
     await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error(`Account does not exist.`)
+      throw EthereumJSErrorWithoutCode(`Account does not exist.`)
     }
 
     const trie = this._getStorageTrie(address, account)
@@ -640,7 +641,7 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async generateCanonicalGenesis(initState: any): Promise<void> {
     if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
+      throw EthereumJSErrorWithoutCode('Cannot create genesis state with uncommitted checkpoints')
     }
     if (this.DEBUG) {
       this._debug(`Save genesis state into the state trie`)

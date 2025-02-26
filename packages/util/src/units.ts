@@ -1,4 +1,5 @@
 import { BIGINT_0, BIGINT_1 } from './constants.js'
+import { EthereumJSErrorWithoutCode } from './errors.js'
 
 /** Conversion constants to wei */
 export const GWEI_TO_WEI = BigInt(10 ** 9) // Multiplier to convert from Gwei to Wei
@@ -24,10 +25,10 @@ export function formatBigDecimal(
 export class Units {
   static validateInput(amount: number | bigint): void {
     if (typeof amount === 'number' && !Number.isInteger(amount)) {
-      throw new Error('Input must be an integer number')
+      throw EthereumJSErrorWithoutCode('Input must be an integer number')
     }
     if (BigInt(amount) < 0) {
-      throw new Error('Input must be a positive number')
+      throw EthereumJSErrorWithoutCode('Input must be a positive number')
     }
   }
 

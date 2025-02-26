@@ -1,5 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { bytesToHex } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
 import type { Blockchain } from '../index.js'
@@ -35,7 +35,7 @@ export class EthashConsensus implements Consensus {
   async validateConsensus(block: Block): Promise<void> {
     const valid = await this._ethash.verifyPOW(block)
     if (!valid) {
-      throw new Error('invalid POW')
+      throw EthereumJSErrorWithoutCode('invalid POW')
     }
     this.DEBUG &&
       this._debug(
@@ -49,11 +49,11 @@ export class EthashConsensus implements Consensus {
    */
   async validateDifficulty(header: BlockHeader) {
     if (!this.blockchain) {
-      throw new Error('blockchain not provided')
+      throw EthereumJSErrorWithoutCode('blockchain not provided')
     }
     const parentHeader = await this.blockchain['_getHeader'](header.parentHash)
     if (header.ethashCanonicalDifficulty(parentHeader) !== header.difficulty) {
-      throw new Error(`invalid difficulty ${header.errorStr()}`)
+      throw EthereumJSErrorWithoutCode(`invalid difficulty ${header.errorStr()}`)
     }
     this.DEBUG &&
       this._debug(

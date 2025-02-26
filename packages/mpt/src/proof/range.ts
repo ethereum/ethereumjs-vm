@@ -1,4 +1,4 @@
-import { equalsBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, equalsBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { createMPTFromProof } from '../index.js'
@@ -95,7 +95,7 @@ async function unset(
   } else if (child === null) {
     return pos - 1
   } else {
-    throw new Error('invalid node')
+    throw EthereumJSErrorWithoutCode('invalid node')
   }
 }
 
@@ -149,7 +149,7 @@ async function unsetInternal(
 
       if (node instanceof LeafMPTNode) {
         // it shouldn't happen
-        throw new Error('invalid node')
+        throw EthereumJSErrorWithoutCode('invalid node')
       }
 
       // continue to the next node
@@ -203,7 +203,7 @@ async function unsetInternal(
       node = await trie.lookupNode(leftNode)
       pos += 1
     } else {
-      throw new Error('invalid node')
+      throw EthereumJSErrorWithoutCode('invalid node')
     }
   }
 
@@ -234,11 +234,11 @@ async function unsetInternal(
     }
 
     if (shortForkLeft === -1 && shortForkRight === -1) {
-      throw new Error('invalid range')
+      throw EthereumJSErrorWithoutCode('invalid range')
     }
 
     if (shortForkLeft === 1 && shortForkRight === 1) {
-      throw new Error('invalid range')
+      throw EthereumJSErrorWithoutCode('invalid range')
     }
 
     if (shortForkLeft !== 0 && shortForkRight !== 0) {
@@ -310,7 +310,7 @@ async function unsetInternal(
 
     return false
   } else {
-    throw new Error('invalid node')
+    throw EthereumJSErrorWithoutCode('invalid node')
   }
 }
 
@@ -340,7 +340,7 @@ async function verifyMPTWithMerkleProof(
     }
   } catch (err: any) {
     if (err.message === 'Missing node in DB') {
-      throw new Error('Invalid proof provided')
+      throw EthereumJSErrorWithoutCode('Invalid proof provided')
     } else {
       throw err
     }
@@ -380,7 +380,7 @@ async function hasRightElement(trie: MerklePatriciaTrie, key: Nibbles): Promise<
     } else if (node instanceof LeafMPTNode) {
       return false
     } else {
-      throw new Error('invalid node')
+      throw EthereumJSErrorWithoutCode('invalid node')
     }
   }
   return false
@@ -433,19 +433,19 @@ export async function verifyMerkleRangeProof(
   const keys = keysRaw.map(bytesToNibbles)
 
   if (keys.length !== values.length) {
-    throw new Error('invalid keys length or values length')
+    throw EthereumJSErrorWithoutCode('invalid keys length or values length')
   }
 
   // Make sure the keys are in order
   for (let i = 0; i < keys.length - 1; i++) {
     if (nibblesCompare(keys[i], keys[i + 1]) >= 0) {
-      throw new Error('invalid keys order')
+      throw EthereumJSErrorWithoutCode('invalid keys order')
     }
   }
   // Make sure all values are present
   for (const value of values) {
     if (value.length === 0) {
-      throw new Error('invalid values')
+      throw EthereumJSErrorWithoutCode('invalid values')
     }
   }
 
@@ -456,7 +456,7 @@ export async function verifyMerkleRangeProof(
       await trie.put(nibblesTypeToPackedBytes(keys[i]), values[i])
     }
     if (!equalsBytes(rootHash, trie.root())) {
-      throw new Error('invalid all elements proof: root mismatch')
+      throw EthereumJSErrorWithoutCode('invalid all elements proof: root mismatch')
     }
     return false
   }
@@ -472,7 +472,7 @@ export async function verifyMerkleRangeProof(
       )
 
       if (value !== null || (await hasRightElement(trie, firstKey))) {
-        throw new Error('invalid zero element proof: value mismatch')
+        throw EthereumJSErrorWithoutCode('invalid zero element proof: value mismatch')
       }
 
       return false
@@ -480,7 +480,7 @@ export async function verifyMerkleRangeProof(
   }
 
   if (proof === null || firstKey === null || lastKey === null) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'invalid all elements proof: proof, firstKey, lastKey must be null at the same time',
     )
   }
@@ -495,10 +495,12 @@ export async function verifyMerkleRangeProof(
     )
 
     if (nibblesCompare(firstKey, keys[0]) !== 0) {
-      throw new Error('invalid one element proof: firstKey should be equal to keys[0]')
+      throw EthereumJSErrorWithoutCode(
+        'invalid one element proof: firstKey should be equal to keys[0]',
+      )
     }
     if (value === null || !equalsBytes(value, values[0])) {
-      throw new Error('invalid one element proof: value mismatch')
+      throw EthereumJSErrorWithoutCode('invalid one element proof: value mismatch')
     }
 
     return hasRightElement(trie, firstKey)
@@ -506,10 +508,12 @@ export async function verifyMerkleRangeProof(
 
   // Two edge elements proof
   if (nibblesCompare(firstKey, lastKey) >= 0) {
-    throw new Error('invalid two edge elements proof: firstKey should be less than lastKey')
+    throw EthereumJSErrorWithoutCode(
+      'invalid two edge elements proof: firstKey should be less than lastKey',
+    )
   }
   if (firstKey.length !== lastKey.length) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'invalid two edge elements proof: the length of firstKey should be equal to the length of lastKey',
     )
   }
@@ -532,7 +536,7 @@ export async function verifyMerkleRangeProof(
 
   // Compare rootHash
   if (!equalsBytes(trie.root(), rootHash)) {
-    throw new Error('invalid two edge elements proof: root mismatch')
+    throw EthereumJSErrorWithoutCode('invalid two edge elements proof: root mismatch')
   }
 
   return hasRightElement(trie, keys[keys.length - 1])

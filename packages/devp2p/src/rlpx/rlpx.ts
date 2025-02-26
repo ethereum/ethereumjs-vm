@@ -1,4 +1,5 @@
 import {
+  EthereumJSErrorWithoutCode,
   bytesToInt,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -152,8 +153,9 @@ export class RLPx {
     if (!(peer.id instanceof Uint8Array)) throw new TypeError('Expected peer.id as Uint8Array')
     const peerKey = bytesToUnprefixedHex(peer.id)
 
-    if (this._peers.has(peerKey)) throw new Error('Already connected')
-    if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
+    if (this._peers.has(peerKey)) throw EthereumJSErrorWithoutCode('Already connected')
+    if (this._getOpenSlots() === 0)
+      throw EthereumJSErrorWithoutCode('Too many peers already connected')
 
     if (this.DEBUG) {
       this._debug(
@@ -170,7 +172,9 @@ export class RLPx {
     })
 
     socket.once('error', deferred.reject)
-    socket.setTimeout(this._timeout, () => deferred.reject(new Error('Connection timeout')))
+    socket.setTimeout(this._timeout, () =>
+      deferred.reject(EthereumJSErrorWithoutCode('Connection timeout')),
+    )
     socket.connect(peer.tcpPort, peer.address, deferred.resolve)
 
     await deferred.promise
@@ -193,7 +197,7 @@ export class RLPx {
   }
 
   _isAliveCheck() {
-    if (!this._isAlive()) throw new Error('Server already destroyed')
+    if (!this._isAlive()) throw EthereumJSErrorWithoutCode('Server already destroyed')
   }
 
   _getOpenSlots() {

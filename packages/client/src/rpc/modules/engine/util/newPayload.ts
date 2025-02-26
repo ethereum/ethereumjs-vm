@@ -1,6 +1,12 @@
 import { createBlockFromExecutionPayload, genRequestsRoot } from '@ethereumjs/block'
 import { Blob4844Tx } from '@ethereumjs/tx'
-import { CLRequest, CLRequestType, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import {
+  CLRequest,
+  CLRequestType,
+  EthereumJSErrorWithoutCode,
+  bytesToHex,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { sha256 } from 'ethereum-cryptography/sha256'
 
 import { short } from '../../../../util/index.js'
@@ -62,29 +68,29 @@ export const validateAndGen7685RequestsHash = (
   for (const request of executionRequests) {
     const bytes = hexToBytes(request)
     if (bytes.length === 0) {
-      throw new Error('Got a request without a request-identifier')
+      throw EthereumJSErrorWithoutCode('Got a request without a request-identifier')
     }
     switch (bytes[0]) {
       case CLRequestType.Deposit:
         if (!common.isActivatedEIP(6110)) {
-          throw new Error(`Deposit requests are not active`)
+          throw EthereumJSErrorWithoutCode(`Deposit requests are not active`)
         }
         requests.push(new CLRequest(CLRequestType.Deposit, bytes.slice(1)))
         break
       case CLRequestType.Withdrawal:
         if (!common.isActivatedEIP(7002)) {
-          throw new Error(`Withdrawal requests are not active`)
+          throw EthereumJSErrorWithoutCode(`Withdrawal requests are not active`)
         }
         requests.push(new CLRequest(CLRequestType.Withdrawal, bytes.slice(1)))
         break
       case CLRequestType.Consolidation:
         if (!common.isActivatedEIP(7251)) {
-          throw new Error(`Consolidation requests are not active`)
+          throw EthereumJSErrorWithoutCode(`Consolidation requests are not active`)
         }
         requests.push(new CLRequest(CLRequestType.Consolidation, bytes.slice(1)))
         break
       default:
-        throw new Error(`Unknown request identifier: got ${bytes[0]}`)
+        throw EthereumJSErrorWithoutCode(`Unknown request identifier: got ${bytes[0]}`)
     }
   }
 

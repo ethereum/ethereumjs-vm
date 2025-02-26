@@ -1,5 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, bytesToInt, bytesToUtf8, concatBytes, intToBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bytesToHex,
+  bytesToInt,
+  bytesToUtf8,
+  concatBytes,
+  intToBytes,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
@@ -31,7 +38,7 @@ const address = {
   encode(value: string) {
     if (isV4Format(value)) return ipToBytes(value)
     if (isV6Format(value)) return ipToBytes(value)
-    throw new Error(`Invalid address: ${value}`)
+    throw EthereumJSErrorWithoutCode(`Invalid address: ${value}`)
   },
   decode(bytes: Uint8Array) {
     if (bytes.length === 4) return ipToString(bytes)
@@ -41,7 +48,7 @@ const address = {
     if (isV4Format(str) || isV6Format(str)) return str
 
     // also can be host, but skip it right now (because need async function for resolve)
-    throw new Error(`Invalid address bytes: ${bytesToHex(bytes)}`)
+    throw EthereumJSErrorWithoutCode(`Invalid address bytes: ${bytesToHex(bytes)}`)
   },
 }
 
@@ -174,7 +181,7 @@ const types: Types = {
 
 export function encode<T>(typename: string, data: T, privateKey: Uint8Array, common?: Common) {
   const type: number = types.byName[typename] as number
-  if (type === undefined) throw new Error(`Invalid typename: ${typename}`)
+  if (type === undefined) throw EthereumJSErrorWithoutCode(`Invalid typename: ${typename}`)
   const encodedMsg = messages[typename].encode(data)
   const typedata = concatBytes(Uint8Array.from([type]), RLP.encode(encodedMsg))
 
@@ -192,7 +199,7 @@ export function decode(bytes: Uint8Array, common?: Common) {
   const typedata = bytes.subarray(97)
   const type = typedata[0]
   const typename = types.byType[type]
-  if (typename === undefined) throw new Error(`Invalid type: ${type}`)
+  if (typename === undefined) throw EthereumJSErrorWithoutCode(`Invalid type: ${type}`)
   const data = messages[typename].decode(unstrictDecode(typedata.subarray(1)))
 
   const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)

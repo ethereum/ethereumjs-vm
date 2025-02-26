@@ -1,4 +1,5 @@
 import {
+  EthereumJSErrorWithoutCode,
   Lock,
   bitsToBytes,
   bytesToBits,
@@ -55,7 +56,7 @@ export class BinaryTree {
     this._opts = opts
 
     if (opts.db instanceof CheckpointDB) {
-      throw new Error('Cannot pass in an instance of CheckpointDB')
+      throw EthereumJSErrorWithoutCode('Cannot pass in an instance of CheckpointDB')
     }
     this._db = new CheckpointDB({ db: opts.db, cacheSize: opts.cacheSize })
 
@@ -97,7 +98,7 @@ export class BinaryTree {
       }
 
       if (value.length !== this._hashLen) {
-        throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
+        throw EthereumJSErrorWithoutCode(`Invalid root length. Roots are ${this._hashLen} bytes`)
       }
 
       this._root = value
@@ -130,7 +131,8 @@ export class BinaryTree {
    * If the stem is not found, will return an empty array.
    */
   async get(stem: Uint8Array, suffixes: number[]): Promise<(Uint8Array | null)[]> {
-    if (stem.length !== 31) throw new Error(`expected stem with length 31; got ${stem.length}`)
+    if (stem.length !== 31)
+      throw EthereumJSErrorWithoutCode(`expected stem with length 31; got ${stem.length}`)
     this.DEBUG && this.debug(`Stem: ${bytesToHex(stem)}; Suffix: ${suffixes}`, ['get'])
     const stemPath = await this.findPath(stem)
     if (stemPath.node instanceof StemBinaryNode) {
@@ -159,9 +161,10 @@ export class BinaryTree {
    * @returns A Promise that resolves once the value is stored.
    */
   async put(stem: Uint8Array, suffixes: number[], values: (Uint8Array | null)[]): Promise<void> {
-    if (stem.length !== 31) throw new Error(`expected stem with length 31, got ${stem.length}`)
+    if (stem.length !== 31)
+      throw EthereumJSErrorWithoutCode(`expected stem with length 31, got ${stem.length}`)
     if (values.length > 0 && values.length !== suffixes.length)
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `expected number of values (${values.length}) to equal number of suffixes (${suffixes.length})`,
       )
 
@@ -178,7 +181,8 @@ export class BinaryTree {
     const foundPath = await this.findPath(stem)
 
     // We should always at least get the root node back
-    if (foundPath.stack.length === 0) throw new Error(`Root node not found in trie`)
+    if (foundPath.stack.length === 0)
+      throw EthereumJSErrorWithoutCode(`Root node not found in trie`)
 
     // Step 1) Create or update the stem node
     let stemNode: StemBinaryNode
@@ -259,7 +263,9 @@ export class BinaryTree {
         this.DEBUG &&
           this.debug(`Updated parent internal node hash for path ${path.join(',')}`, ['put'])
       } else {
-        throw new Error(`Expected internal node at path ${path.join(',')}, got ${node}`)
+        throw EthereumJSErrorWithoutCode(
+          `Expected internal node at path ${path.join(',')}, got ${node}`,
+        )
       }
     }
 
@@ -419,7 +425,7 @@ export class BinaryTree {
 
     // Get the root node.
     let rawNode = await this._db.get(this.root())
-    if (rawNode === undefined) throw new Error('root node should exist')
+    if (rawNode === undefined) throw EthereumJSErrorWithoutCode('root node should exist')
     const rootNode = decodeBinaryNode(rawNode)
 
     this.DEBUG && this.debug(`Starting with Root Node: [${bytesToHex(this.root())}]`, ['find_path'])
@@ -450,7 +456,8 @@ export class BinaryTree {
 
       // Look up child node by its node hash.
       rawNode = await this._db.get(childNode.hash)
-      if (rawNode === undefined) throw new Error(`missing node at ${childNode.path}`)
+      if (rawNode === undefined)
+        throw EthereumJSErrorWithoutCode(`missing node at ${childNode.path}`)
       const decodedNode = decodeBinaryNode(rawNode)
 
       // Determine how many bits match between keyInBits and the stored path in childNode.
@@ -577,7 +584,7 @@ export class BinaryTree {
    * @param proof
    */
   async fromProof(_proof: any): Promise<void> {
-    throw new Error('Not implemented')
+    throw EthereumJSErrorWithoutCode('Not implemented')
   }
 
   /**
@@ -585,7 +592,7 @@ export class BinaryTree {
    * @param key
    */
   async createBinaryProof(_key: Uint8Array): Promise<any> {
-    throw new Error('Not implemented')
+    throw EthereumJSErrorWithoutCode('Not implemented')
   }
 
   /**
@@ -601,7 +608,7 @@ export class BinaryTree {
     _key: Uint8Array,
     _proof: any,
   ): Promise<Uint8Array | null> {
-    throw new Error('Not implemented')
+    throw EthereumJSErrorWithoutCode('Not implemented')
   }
 
   /**
@@ -609,7 +616,7 @@ export class BinaryTree {
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `tree`
    */
   createReadStream(): any {
-    throw new Error('Not implemented')
+    throw EthereumJSErrorWithoutCode('Not implemented')
   }
 
   /**
@@ -668,7 +675,7 @@ export class BinaryTree {
    */
   async commit(): Promise<void> {
     if (!this.hasCheckpoints()) {
-      throw new Error('trying to commit when not checkpointed')
+      throw EthereumJSErrorWithoutCode('trying to commit when not checkpointed')
     }
 
     await this._lock.acquire()
@@ -684,7 +691,7 @@ export class BinaryTree {
    */
   async revert(): Promise<void> {
     if (!this.hasCheckpoints()) {
-      throw new Error('trying to revert when not checkpointed')
+      throw EthereumJSErrorWithoutCode('trying to revert when not checkpointed')
     }
 
     await this._lock.acquire()
@@ -707,7 +714,7 @@ export class BinaryTree {
     }
 
     if (msg.length !== 32 && msg.length !== 64) {
-      throw new Error('Data must be 32 or 64 bytes')
+      throw EthereumJSErrorWithoutCode('Data must be 32 or 64 bytes')
     }
 
     return Uint8Array.from(this._opts.hashFunction.call(undefined, msg))

@@ -1,6 +1,7 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import {
   Address,
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   MAX_UINT64,
   bigIntToHex,
@@ -36,27 +37,35 @@ export function valueBoundaryCheck(
         if (cannotEqual) {
           if (value !== undefined && value >= MAX_UINT64) {
             // TODO: error msgs got raised to a error string handler first, now throws "generic" error
-            throw new Error(`${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`)
+            throw EthereumJSErrorWithoutCode(
+              `${key} cannot equal or exceed MAX_UINT64 (2^64-1), given ${value}`,
+            )
           }
         } else {
           if (value !== undefined && value > MAX_UINT64) {
-            throw new Error(`${key} cannot exceed MAX_UINT64 (2^64-1), given ${value}`)
+            throw EthereumJSErrorWithoutCode(
+              `${key} cannot exceed MAX_UINT64 (2^64-1), given ${value}`,
+            )
           }
         }
         break
       case 256:
         if (cannotEqual) {
           if (value !== undefined && value >= MAX_INTEGER) {
-            throw new Error(`${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`)
+            throw EthereumJSErrorWithoutCode(
+              `${key} cannot equal or exceed MAX_INTEGER (2^256-1), given ${value}`,
+            )
           }
         } else {
           if (value !== undefined && value > MAX_INTEGER) {
-            throw new Error(`${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`)
+            throw EthereumJSErrorWithoutCode(
+              `${key} cannot exceed MAX_INTEGER (2^256-1), given ${value}`,
+            )
           }
         }
         break
       default: {
-        throw new Error('unimplemented bits value')
+        throw EthereumJSErrorWithoutCode('unimplemented bits value')
       }
     }
   }

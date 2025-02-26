@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   bytesToInt,
   bytesToUtf8,
@@ -423,7 +424,7 @@ export class Peer {
         // The subprotocol is then calling into the lower level method
         // (e.g. `ETH` calling into `Peer._sendMessage()`).
         const sendMethod = (code: number, data: Uint8Array) => {
-          if (code > obj.length) throw new Error('Code out of range')
+          if (code > obj.length) throw EthereumJSErrorWithoutCode('Code out of range')
           this._sendMessage(_offset + code, data)
         }
         // Dynamically instantiate the subprotocol object
@@ -606,7 +607,7 @@ export class Peer {
               payload = RLP.decode(snappy.uncompress(payload))
             }
           } else {
-            throw new Error(e)
+            throw EthereumJSErrorWithoutCode(e)
           }
         }
       }

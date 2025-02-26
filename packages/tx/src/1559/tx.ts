@@ -1,6 +1,7 @@
 import {
   BIGINT_0,
   BIGINT_27,
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -90,14 +91,14 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
     const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {
-      throw new Error('EIP-1559 not enabled on Common')
+      throw EthereumJSErrorWithoutCode('EIP-1559 not enabled on Common')
     }
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
@@ -121,7 +122,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
         this,
         'gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
@@ -129,7 +130,7 @@ export class FeeMarket1559Tx implements TransactionInterface<TransactionType.Fee
         this,
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     EIP2718.validateYParity(this)

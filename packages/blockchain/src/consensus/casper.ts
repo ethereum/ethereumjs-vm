@@ -1,5 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { BIGINT_0 } from '@ethereumjs/util'
+import { BIGINT_0, EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
 import type { Consensus } from '../types.js'
 import type { BlockHeader } from '@ethereumjs/block'
@@ -26,7 +26,7 @@ export class CasperConsensus implements Consensus {
     // blockchain along adding new blocks or headers
     if (header.difficulty !== BIGINT_0) {
       const msg = 'invalid difficulty.  PoS blocks must have difficulty 0'
-      throw new Error(`${msg} ${header.errorStr()}`)
+      throw EthereumJSErrorWithoutCode(`${msg} ${header.errorStr()}`)
     }
   }
   public async newBlock(): Promise<void> {}

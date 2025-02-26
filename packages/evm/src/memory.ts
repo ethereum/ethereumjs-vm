@@ -1,4 +1,4 @@
-import { concatBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, concatBytes } from '@ethereumjs/util'
 
 const ceil = (value: number, ceiling: number): number => {
   const r = value % ceiling
@@ -52,8 +52,9 @@ export class Memory {
 
     this.extend(offset, size)
 
-    if (value.length !== size) throw new Error('Invalid value size')
-    if (offset + size > this._store.length) throw new Error('Value exceeds memory capacity')
+    if (value.length !== size) throw EthereumJSErrorWithoutCode('Invalid value size')
+    if (offset + size > this._store.length)
+      throw EthereumJSErrorWithoutCode('Value exceeds memory capacity')
 
     this._store.set(value, offset)
   }

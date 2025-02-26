@@ -18,6 +18,7 @@ import {
   SECP256K1_ORDER,
   SECP256K1_ORDER_DIV_2,
 } from './constants.js'
+import { EthereumJSErrorWithoutCode } from './errors.js'
 import { assertIsBytes } from './helpers.js'
 
 import type { PrefixedHexString } from './types.js'
@@ -64,7 +65,9 @@ export function ecsign(
     /* The recovery identifier is a 1 byte value specifying the parity and finiteness of the coordinates 
        of the curve point for which r is the x-value; this value is in the range of [0, 3], 
        however we declare the upper two possibilities, representing infinite values, invalid. */
-    throw new Error(`Invalid recovery value: values 2/3 are invalid, received: ${sig.recovery}`)
+    throw EthereumJSErrorWithoutCode(
+      `Invalid recovery value: values 2/3 are invalid, received: ${sig.recovery}`,
+    )
   }
 
   const v =
@@ -103,7 +106,7 @@ export const ecrecover = function (
   const signature = concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32))
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
   const sig = secp256k1.Signature.fromCompact(signature).addRecoveryBit(Number(recovery))
@@ -124,7 +127,7 @@ export const toRPCSig = function (
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
@@ -145,7 +148,7 @@ export const toCompactSig = function (
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
   const ss = Uint8Array.from([...s])
@@ -181,7 +184,7 @@ export const fromRPCSig = function (sig: PrefixedHexString): ECDSASignature {
     v = BigInt(bytesToInt(bytes.subarray(32, 33)) >> 7)
     s[0] &= 0x7f
   } else {
-    throw new Error('Invalid signature length')
+    throw EthereumJSErrorWithoutCode('Invalid signature length')
   }
 
   // support both versions of `eth_sign` responses

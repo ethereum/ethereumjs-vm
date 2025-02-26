@@ -1,4 +1,9 @@
-import { bytesToUnprefixedHex, hexToBytes, randomBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bytesToUnprefixedHex,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 import { RPCManager, saveReceiptsMethods } from '../src/rpc/index.js'
@@ -44,7 +49,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
 
   // If jwtFilePath is provided, it should exist
   if (jwtFilePath !== undefined && !existsSync(jwtFilePath)) {
-    throw new Error(`No file exists at provided jwt secret path=${jwtFilePath}`)
+    throw EthereumJSErrorWithoutCode(`No file exists at provided jwt secret path=${jwtFilePath}`)
   }
 
   if (jwtFilePath !== undefined || existsSync(defaultJwtPath)) {

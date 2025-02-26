@@ -9,6 +9,7 @@ import {
 } from '@ethereumjs/common'
 import {
   BIGINT_2,
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
@@ -473,7 +474,7 @@ export function getArgs(): ClientOpts {
         if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
         if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
 
-        if (collision) throw new Error('cannot reuse ports between RPC instances')
+        if (collision) throw EthereumJSErrorWithoutCode('cannot reuse ports between RPC instances')
         return true
       })
       .parseSync()
@@ -585,7 +586,7 @@ async function inputAccounts(args: ClientOpts) {
         if (address.equals(derivedAddress) === true) {
           accounts.push([address, privKey])
         } else {
-          throw new Error(
+          throw EthereumJSErrorWithoutCode(
             `Private key does not match for ${address} (address derived: ${derivedAddress})`,
           )
         }
@@ -597,7 +598,7 @@ async function inputAccounts(args: ClientOpts) {
       accounts.push([derivedAddress, privKey])
     }
   } catch (e: any) {
-    throw new Error(`Encountered error unlocking account:\n${e.message}`)
+    throw EthereumJSErrorWithoutCode(`Encountered error unlocking account:\n${e.message}`)
   }
   rl.close()
   return accounts
@@ -654,7 +655,7 @@ export async function generateClientConfig(args: ClientOpts) {
     ) => {
       if (msg.length < 32) {
         // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
-        throw new Error('message length must be 32 bytes or greater')
+        throw EthereumJSErrorWithoutCode('message length must be 32 bytes or greater')
       }
       const { chainId } = ecSignOpts
       const buf = secp256k1Sign(msg, pk)
@@ -719,7 +720,7 @@ export async function generateClientConfig(args: ClientOpts) {
         customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
-      throw new Error(`invalid chain parameters: ${err.message}`)
+      throw EthereumJSErrorWithoutCode(`invalid chain parameters: ${err.message}`)
     }
   } else if (typeof args.gethGenesis === 'string') {
     // Use geth genesis parameters file if specified
@@ -733,7 +734,7 @@ export async function generateClientConfig(args: ClientOpts) {
   }
 
   if (args.mine === true && accounts.length === 0) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'Please provide an account to mine blocks with `--unlock [address]` or use `--dev` to generate',
     )
   }

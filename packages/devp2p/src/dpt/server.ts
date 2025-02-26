@@ -1,4 +1,4 @@
-import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import * as dgram from 'dgram'
 import { EventEmitter } from 'eventemitter3'
@@ -115,7 +115,9 @@ export class Server {
             )
           }
           this._requests.delete(rKey)
-          deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
+          deferred.reject(
+            EthereumJSErrorWithoutCode(`Timeout error: ping ${peer.address}:${peer.udpPort}`),
+          )
         } else {
           return deferred.promise
         }
@@ -131,7 +133,7 @@ export class Server {
   }
 
   _isAliveCheck() {
-    if (this._socket === null) throw new Error('Server already destroyed')
+    if (this._socket === null) throw EthereumJSErrorWithoutCode('Server already destroyed')
   }
 
   _send(peer: PeerInfo, typename: string, data: any) {

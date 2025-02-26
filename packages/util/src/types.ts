@@ -1,4 +1,5 @@
 import { bytesToBigInt, bytesToHex, toBytes } from './bytes.js'
+import { EthereumJSErrorWithoutCode } from './errors.js'
 import { isHexString } from './internal.js'
 
 import type { Address } from './address.js'
@@ -98,9 +99,9 @@ export function toType<T extends TypeOutput>(
   }
 
   if (typeof input === 'string' && !isHexString(input)) {
-    throw new Error(`A string must be provided with a 0x-prefix, given: ${input}`)
+    throw EthereumJSErrorWithoutCode(`A string must be provided with a 0x-prefix, given: ${input}`)
   } else if (typeof input === 'number' && !Number.isSafeInteger(input)) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)',
     )
   }
@@ -115,7 +116,7 @@ export function toType<T extends TypeOutput>(
     case TypeOutput.Number: {
       const bigInt = bytesToBigInt(output)
       if (bigInt > BigInt(Number.MAX_SAFE_INTEGER)) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type)',
         )
       }
@@ -124,6 +125,6 @@ export function toType<T extends TypeOutput>(
     case TypeOutput.PrefixedHexString:
       return bytesToHex(output) as TypeOutputReturnType[T]
     default:
-      throw new Error('unknown outputType')
+      throw EthereumJSErrorWithoutCode('unknown outputType')
   }
 }

@@ -1,3 +1,5 @@
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
+
 import type { EIP1559CompatibleTx } from '../types.js'
 
 export function getUpfrontCost(tx: EIP1559CompatibleTx, baseFee: bigint): bigint {
@@ -13,7 +15,7 @@ export function getEffectivePriorityFee(
   baseFee: bigint | undefined,
 ): bigint {
   if (baseFee === undefined || baseFee > tx.maxFeePerGas) {
-    throw new Error('Tx cannot pay baseFee')
+    throw EthereumJSErrorWithoutCode('Tx cannot pay baseFee')
   }
 
   // The remaining fee for the coinbase, which can take up to this value, capped at `maxPriorityFeePerGas`

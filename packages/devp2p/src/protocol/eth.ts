@@ -1,6 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -147,7 +148,7 @@ export class ETH extends Protocol {
           if (this.DEBUG) {
             this.debug('STATUS', msg)
           }
-          throw new Error(msg)
+          throw EthereumJSErrorWithoutCode(msg)
         }
       }
     }
@@ -158,7 +159,7 @@ export class ETH extends Protocol {
       if (this.DEBUG) {
         this.debug('STATUS', msg)
       }
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (!c.hardforkGteHardfork(peerFork.name, this._hardfork)) {
@@ -172,7 +173,7 @@ export class ETH extends Protocol {
         if (this.DEBUG) {
           this.debug('STATUS', msg)
         }
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
   }
@@ -280,7 +281,7 @@ export class ETH extends Protocol {
       if (status.latestBlock) {
         const latestBlock = bytesToBigInt(status.latestBlock)
         if (latestBlock < this._latestBlock) {
-          throw new Error(
+          throw EthereumJSErrorWithoutCode(
             'latest block provided is not matching the HF setting of the Common instance (Rlpx)',
           )
         }
@@ -328,7 +329,7 @@ export class ETH extends Protocol {
 
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS:
-        throw new Error('Please send status message through .sendStatus')
+        throw EthereumJSErrorWithoutCode('Please send status message through .sendStatus')
 
       case ETH.MESSAGE_CODES.NEW_BLOCK_HASHES:
       case ETH.MESSAGE_CODES.TX:
@@ -338,26 +339,26 @@ export class ETH extends Protocol {
       case ETH.MESSAGE_CODES.BLOCK_BODIES:
       case ETH.MESSAGE_CODES.NEW_BLOCK:
         if (this._version >= ETH.eth62.version) break
-        throw new Error(`Code ${code} not allowed with version ${this._version}`)
+        throw EthereumJSErrorWithoutCode(`Code ${code} not allowed with version ${this._version}`)
 
       case ETH.MESSAGE_CODES.GET_RECEIPTS:
       case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
-        throw new Error(`Code ${code} not allowed with version ${this._version}`)
+        throw EthereumJSErrorWithoutCode(`Code ${code} not allowed with version ${this._version}`)
 
       case ETH.MESSAGE_CODES.NEW_POOLED_TRANSACTION_HASHES:
       case ETH.MESSAGE_CODES.GET_POOLED_TRANSACTIONS:
       case ETH.MESSAGE_CODES.POOLED_TRANSACTIONS:
         if (this._version >= ETH.eth65.version) break
-        throw new Error(`Code ${code} not allowed with version ${this._version}`)
+        throw EthereumJSErrorWithoutCode(`Code ${code} not allowed with version ${this._version}`)
 
       case ETH.MESSAGE_CODES.GET_NODE_DATA:
       case ETH.MESSAGE_CODES.NODE_DATA:
         if (this._version >= ETH.eth63.version && this._version <= ETH.eth66.version) break
-        throw new Error(`Code ${code} not allowed with version ${this._version}`)
+        throw EthereumJSErrorWithoutCode(`Code ${code} not allowed with version ${this._version}`)
 
       default:
-        throw new Error(`Unknown code ${code}`)
+        throw EthereumJSErrorWithoutCode(`Unknown code ${code}`)
     }
 
     payload = RLP.encode(payload)

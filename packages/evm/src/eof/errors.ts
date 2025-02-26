@@ -1,3 +1,5 @@
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
+
 export enum EOFError {
   // Stream Reader
   OutOfBounds = 'Trying to read out of bounds',
@@ -185,71 +187,75 @@ export function validationError(type: EOFError, ...args: any): never {
     case EOFError.OutOfBounds: {
       const pos = args[0]
       if (pos === 0 || pos === 2 || pos === 3 || pos === 6) {
-        throw new Error(args[1])
+        throw EthereumJSErrorWithoutCode(args[1])
       }
-      throw new Error(EOFError.OutOfBounds + ` `)
+      throw EthereumJSErrorWithoutCode(EOFError.OutOfBounds + ` `)
     }
     case EOFError.VerifyBytes: {
       const pos = args[0]
       if (pos === 0 || pos === 2 || pos === 3 || pos === 6) {
-        throw new Error(args[1])
+        throw EthereumJSErrorWithoutCode(args[1])
       }
-      throw new Error(EOFError.VerifyBytes + ` at pos: ${args[0]}: ${args[1]}`)
+      throw EthereumJSErrorWithoutCode(EOFError.VerifyBytes + ` at pos: ${args[0]}: ${args[1]}`)
     }
     case EOFError.VerifyUint: {
       const pos = args[0]
       if (pos === 0 || pos === 2 || pos === 3 || pos === 6 || pos === 18) {
-        throw new Error(args[1])
+        throw EthereumJSErrorWithoutCode(args[1])
       }
-      throw new Error(EOFError.VerifyUint + `at pos: ${args[0]}: ${args[1]}`)
+      throw EthereumJSErrorWithoutCode(EOFError.VerifyUint + `at pos: ${args[0]}: ${args[1]}`)
     }
     case EOFError.TypeSize: {
-      throw new Error(EOFError.TypeSize + args[0])
+      throw EthereumJSErrorWithoutCode(EOFError.TypeSize + args[0])
     }
     case EOFError.TypeSections: {
-      throw new Error(`${EOFError.TypeSections} (types ${args[0]} code ${args[1]})`)
+      throw EthereumJSErrorWithoutCode(
+        `${EOFError.TypeSections} (types ${args[0]} code ${args[1]})`,
+      )
     }
     case EOFError.InvalidTypeSize: {
-      throw new Error(EOFError.InvalidTypeSize)
+      throw EthereumJSErrorWithoutCode(EOFError.InvalidTypeSize)
     }
     case EOFError.InvalidCodeSize: {
-      throw new Error(EOFError.InvalidCodeSize + args[0])
+      throw EthereumJSErrorWithoutCode(EOFError.InvalidCodeSize + args[0])
     }
     case EOFError.Inputs: {
-      throw new Error(`${EOFError.Inputs} - typeSection ${args[0]}`)
+      throw EthereumJSErrorWithoutCode(`${EOFError.Inputs} - typeSection ${args[0]}`)
     }
     case EOFError.Outputs: {
-      throw new Error(`${EOFError.Outputs} - typeSection ${args[0]}`)
+      throw EthereumJSErrorWithoutCode(`${EOFError.Outputs} - typeSection ${args[0]}`)
     }
     case EOFError.Code0Inputs: {
-      throw new Error(`first code section should have 0 inputs`)
+      throw EthereumJSErrorWithoutCode(`first code section should have 0 inputs`)
     }
     case EOFError.Code0Outputs: {
-      throw new Error(`first code section should have 0 outputs`)
+      throw EthereumJSErrorWithoutCode(`first code section should have 0 outputs`)
     }
     case EOFError.MaxInputs: {
-      throw new Error(EOFError.MaxInputs + `${args[1]} - code section ${args[0]}`)
+      throw EthereumJSErrorWithoutCode(EOFError.MaxInputs + `${args[1]} - code section ${args[0]}`)
     }
     case EOFError.MaxOutputs: {
-      throw new Error(EOFError.MaxOutputs + `${args[1]} - code section ${args[0]}`)
+      throw EthereumJSErrorWithoutCode(EOFError.MaxOutputs + `${args[1]} - code section ${args[0]}`)
     }
     case EOFError.CodeSection: {
-      throw new Error(`expected code: codeSection ${args[0]}: `)
+      throw EthereumJSErrorWithoutCode(`expected code: codeSection ${args[0]}: `)
     }
     case EOFError.DataSection: {
-      throw new Error(EOFError.DataSection)
+      throw EthereumJSErrorWithoutCode(EOFError.DataSection)
     }
     case EOFError.MaxStackHeight: {
-      throw new Error(`${EOFError.MaxStackHeight} - typeSection ${args[0]}: `)
+      throw EthereumJSErrorWithoutCode(`${EOFError.MaxStackHeight} - typeSection ${args[0]}: `)
     }
     case EOFError.MaxStackHeightLimit: {
-      throw new Error(`${EOFError.MaxStackHeightLimit}, got: ${args[1]} - typeSection ${args[0]}`)
+      throw EthereumJSErrorWithoutCode(
+        `${EOFError.MaxStackHeightLimit}, got: ${args[1]} - typeSection ${args[0]}`,
+      )
     }
     case EOFError.DanglingBytes: {
-      throw new Error(EOFError.DanglingBytes)
+      throw EthereumJSErrorWithoutCode(EOFError.DanglingBytes)
     }
     default: {
-      throw new Error(type)
+      throw EthereumJSErrorWithoutCode(type)
     }
   }
 }

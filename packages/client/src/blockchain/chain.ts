@@ -1,7 +1,7 @@
 import { createBlockFromBytesArray, createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, EthereumJSErrorWithoutCode, equalsBytes } from '@ethereumjs/util'
 
 import { LevelDB } from '../execution/level.js'
 import { Event } from '../types.js'
@@ -361,7 +361,7 @@ export class Chain {
     skip = 0,
     reverse = false,
   ): Promise<Block[]> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     return this.blockchain.getBlocks(block, max, skip, reverse)
   }
 
@@ -371,7 +371,7 @@ export class Chain {
    * @throws if block is not found
    */
   async getBlock(block: Uint8Array | bigint): Promise<Block> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     return this.blockchain.getBlock(block)
   }
 
@@ -382,7 +382,7 @@ export class Chain {
    * @returns number of blocks added
    */
   async putBlocks(blocks: Block[], fromEngine = false, skipUpdateEmit = false): Promise<number> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     if (blocks.length === 0) return 0
 
     let numAdded = 0
@@ -456,7 +456,7 @@ export class Chain {
    * @returns number of headers added
    */
   async putHeaders(headers: BlockHeader[], mergeIncludes = false): Promise<number> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     if (headers.length === 0) return 0
 
     let numAdded = 0
@@ -484,7 +484,7 @@ export class Chain {
    * Gets the latest header in the canonical chain
    */
   async getCanonicalHeadHeader(): Promise<BlockHeader> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     return this.blockchain.getCanonicalHeadHeader()
   }
 
@@ -492,7 +492,7 @@ export class Chain {
    * Gets the latest block in the canonical chain
    */
   async getCanonicalHeadBlock(): Promise<Block> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     return this.blockchain.getCanonicalHeadBlock()
   }
 
@@ -500,7 +500,7 @@ export class Chain {
    * Gets the latest block in the canonical chain
    */
   async getCanonicalSafeBlock(): Promise<Block | undefined> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     return this.blockchain.getIteratorHeadSafe('safe')
   }
 
@@ -508,7 +508,7 @@ export class Chain {
    * Gets the latest block in the canonical chain
    */
   async getCanonicalFinalizedBlock(): Promise<Block | undefined> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     return this.blockchain.getIteratorHeadSafe('finalized')
   }
 
@@ -516,7 +516,7 @@ export class Chain {
    * Gets the latest block in the canonical chain
    */
   async getCanonicalVmHead(): Promise<Block> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     return this.blockchain.getIteratorHead()
   }
 
@@ -527,7 +527,7 @@ export class Chain {
    * @returns the td
    */
   async getTd(hash: Uint8Array, num: bigint): Promise<bigint> {
-    if (!this.opened) throw new Error('Chain closed')
+    if (!this.opened) throw EthereumJSErrorWithoutCode('Chain closed')
     return this.blockchain.getTotalDifficulty(hash, num)
   }
 }
