@@ -18,7 +18,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     const c = new Common({ chain: Mainnet })
     assert.equal(c.chainName(), 'mainnet', 'should initialize with chain name')
     assert.equal(c.chainId(), BigInt(1), 'should return correct chain Id')
-    assert.equal(c.hardfork(), Hardfork.Cancun, 'should set hardfork to current default hardfork')
+    assert.equal(c.hardfork(), Hardfork.Prague, 'should set hardfork to current default hardfork')
     assert.equal(
       c.hardfork(),
       c.DEFAULT_HARDFORK,

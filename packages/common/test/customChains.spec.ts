@@ -4,6 +4,8 @@ import { Common, Hardfork, Mainnet, createCustomCommon } from '../src/index.js'
 
 import { testnetData } from './data/testnet.js'
 
+import type { ChainConfig } from '../src/index.js'
+
 describe('[Common]: Custom chains', () => {
   it('chain -> object: should provide correct access to private network chain parameters', () => {
     const c = new Common({ chain: testnetData, hardfork: Hardfork.Byzantium })
@@ -87,9 +89,9 @@ describe('[Common]: Custom chains', () => {
       },
       Mainnet,
     )
-    // Note: default HF of Common is currently Cancun
+    // Note: default HF of Common is currently Prague
     // Did not pass any "hardfork" param
-    assert.equal(c.hardfork(), Hardfork.Cancun)
+    assert.equal(c.hardfork(), Hardfork.Prague)
     c.setHardforkBy({
       blockNumber: 0,
     })
@@ -106,6 +108,34 @@ describe('[Common]: Custom chains', () => {
     })
     assert.equal(c.hardfork(), 'testEIP2935Hardfork')
     assert.ok(c.isActivatedEIP(2935))
+  })
+
+  it('customChain: correctly set default hardfork on custom chain config', () => {
+    const chainConfig: ChainConfig = {
+      name: 'custom',
+      chainId: 123,
+      genesis: {
+        gasLimit: 0,
+        difficulty: 1,
+        nonce: '0x42',
+        extraData: '0x',
+      },
+      hardforks: [
+        {
+          name: 'chainstart',
+          block: 0,
+        },
+      ],
+      bootstrapNodes: [],
+      consensus: {
+        type: 'pos',
+        algorithm: 'casper',
+        casper: {},
+      },
+    }
+    const c = createCustomCommon({ chainId: 123 }, chainConfig)
+    assert.equal(c.hardfork(), c.DEFAULT_HARDFORK)
+    assert.equal(c.hardfork(), Hardfork.Prague)
   })
 
   it('customHardforks: override params', () => {

@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Hardfork, createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -26,6 +26,7 @@ import { buildBlock, createVM, paramsVM, runBlock, runTx } from '../../../src/in
 
 import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
+import type { ChainConfig } from '@ethereumjs/common'
 import type { LegacyTxData } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -62,6 +63,26 @@ function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
     block: null,
     timestamp,
   })
+
+  const chainConfig: ChainConfig = {
+    name: 'custom',
+    chainId: 123,
+    genesis: {
+      gasLimit: 5000,
+      difficulty: 1,
+      nonce: '0x4242424242424242',
+      extraData: '0x',
+    },
+    hardforks,
+    bootstrapNodes: [],
+    consensus: {
+      type: 'pos',
+      algorithm: 'casper',
+      casper: {},
+    },
+    defaultHardfork: 'cancun',
+  }
+
   const c = createCustomCommon(
     {
       customHardforks: {
@@ -73,15 +94,8 @@ function eip2935ActiveAtCommon(timestamp: number, address: bigint) {
         },
       },
       hardforks,
-      /*genesis: {
-      gasLimit: 30_000_000,
-      timestamp: "0x0",
-      extraData: "0x",
-      difficulty: "0x0",
-      nonce: "0x0000000000000000"
-    }*/
     },
-    Mainnet,
+    chainConfig,
   )
 
   return c
