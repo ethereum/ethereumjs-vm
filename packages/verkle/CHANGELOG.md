@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 0.2.0-alpha.1 - [ UNPUBLISHED ]
+## 0.2.0-alpha.1 - 2024-10-17
 
 We are getting there! 😁 While still in an experimental stage this release makes a big leap towards stateful Verkle-based EVM execution, by applying various updates and aligning with a new experimental `StatefulVerkleStateManager`.
 
