@@ -11,11 +11,11 @@ import {
 } from '@ethereumjs/util'
 import debug from 'debug'
 
-import { createBinaryTree } from './constructors.js'
 import { CheckpointDB } from './db/index.js'
 import { InternalBinaryNode } from './node/internalNode.js'
 import { StemBinaryNode } from './node/stemNode.js'
 import { decodeBinaryNode, isInternalBinaryNode, isStemBinaryNode } from './node/util.js'
+import { binaryTreeFromProof, verifyBinaryProof } from './proof.js'
 import { type BinaryTreeOpts, ROOT_DB_KEY } from './types.js'
 
 import type { BinaryNode } from './node/types.js'
@@ -578,15 +578,7 @@ export class BinaryTree {
    * @param proof
    */
   async fromProof(_proof: Uint8Array[]): Promise<BinaryTree> {
-    const proofTrie = await createBinaryTree()
-    const putStack: [Uint8Array, BinaryNode][] = _proof.map((bytes) => {
-      const node = decodeBinaryNode(bytes)
-      return [this.merkelize(node), node]
-    })
-    await proofTrie.saveStack(putStack)
-    const root = putStack[0][0]
-    proofTrie.root(root)
-    return proofTrie
+    return binaryTreeFromProof(_proof)
   }
 
   /**
@@ -611,18 +603,7 @@ export class BinaryTree {
     _key: Uint8Array,
     _proof: Uint8Array[],
   ): Promise<Uint8Array | null> {
-    const proofTrie = await this.fromProof(_proof)
-    const [value] = await proofTrie.get(_key.slice(0, 31), [_key[31]])
-    const valueNode = decodeBinaryNode(_proof[_proof.length - 1]) as StemBinaryNode
-    const expectedValue = valueNode.values[_key[31]]
-    if (!expectedValue) {
-      if (value) {
-        throw new Error('Proof is invalid')
-      }
-    } else if (value && !equalsBytes(value, expectedValue)) {
-      throw new Error('Proof is invalid')
-    }
-    return value
+    return verifyBinaryProof(_rootHash, _key, _proof)
   }
 
   /**

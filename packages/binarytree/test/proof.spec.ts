@@ -3,6 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createBinaryTree } from '../src/constructors.js'
 import { decodeBinaryNode } from '../src/index.js'
+import { binaryTreeFromProof, verifyBinaryProof } from '../src/proof.js'
 
 import type { StemBinaryNode } from '../src/node/stemNode.js'
 
@@ -51,7 +52,7 @@ describe('binary tree proof', async () => {
     )
 
     // create sparse tree from proof
-    const tree2 = await tree1.fromProof(proof)
+    const tree2 = await binaryTreeFromProof(proof)
     assert.deepEqual(
       tree2.root(),
       tree1.root(),
@@ -65,11 +66,7 @@ describe('binary tree proof', async () => {
     assert.deepEqual(value, keyValuePairs[0].value)
 
     // verify proof using verifyBinaryProof
-    const proofValue = await tree1.verifyBinaryProof(
-      tree1.root(),
-      keyValuePairs[0].hashedKey,
-      proof,
-    )
+    const proofValue = await verifyBinaryProof(tree1.root(), keyValuePairs[0].hashedKey, proof)
     assert.deepEqual(keyValuePairs[0].value, proofValue, 'verify proof should return target value')
   })
 
@@ -77,7 +74,7 @@ describe('binary tree proof', async () => {
     const fakeKey = new Uint8Array(keyValuePairs[0].hashedKey.length).fill(5)
 
     const proof = await tree1.createBinaryProof(fakeKey)
-    const proofValue = await tree1.verifyBinaryProof(tree1.root(), fakeKey, proof)
+    const proofValue = await verifyBinaryProof(tree1.root(), fakeKey, proof)
     assert.deepEqual(proofValue, undefined, 'verify proof of non-existence should return undefined')
   })
 })
