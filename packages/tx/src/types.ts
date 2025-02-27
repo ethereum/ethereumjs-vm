@@ -1,3 +1,4 @@
+// Line is added so I can open a placeholder PR on github [REMOVE ME]
 import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 
 import type { FeeMarket1559Tx } from './1559/tx.js'
@@ -625,3 +626,56 @@ export type AuthorizationListBytesItem = [
 ]
 export type AuthorizationListBytes = AuthorizationListBytesItem[]
 export type AuthorizationList = AuthorizationListItem[]
+
+type NestedUint8Array = (Uint8Array | NestedUint8Array)[]
+
+// This is all necessary in Block
+export interface MinimalTxInterfaceBlock {
+  supports(capability: Capability): boolean
+  serialize(): Uint8Array
+  raw(): NestedUint8Array // TODO make more explicit, can deduce exactly what the raw returns
+  toJSON(): any // more typesafe
+
+  // Properties
+  maxFeePerGas: bigint
+  gasPrice: bigint
+  numBlobs: number
+  maxFeePerBlobGas: bigint
+  blobVersionedHashes: Uint8Array[]
+
+  // Can likely throw out
+  getValidationErrors(): string
+  isSigned(): boolean
+}
+
+// This is all necessary in VM
+export interface MinimalTxInterfaceVM {
+  hash(): Uint8Array // Only used in debug logger !?
+  supports(capability: Capability): boolean
+  getSenderAddress(): Address
+  isSigned(): boolean // Only used in debug logger !?
+  getIntrinsicGas(): bigint
+  getUpfrontCost(): bigint
+  getEffectivePriorityFee(): bigint
+  serialize(): Uint8Array
+
+  // Properties
+  common: Common
+  gasLimit: bigint
+  gasPrice: bigint
+  maxFeePerGas: bigint
+  maxFeePerBlobGas: bigint
+  numBlobs: number
+  data: Uint8Array
+  AccessListJSON: any // Todo type
+  authorizationList: any // Todo type
+  to: Address | undefined | null // Note null got added here
+  value: bigint
+  nonce: bigint
+  blobVersionedHashes: Uint8Array[]
+  type: number
+  blobs: any // Todo type
+
+  // Can likely throw out
+  errorStr(): string
+}
