@@ -32,14 +32,14 @@ export async function binaryTreeFromProof(_proof: Uint8Array[]): Promise<BinaryT
  * @returns The value from the key, or null if valid proof of non-existence.
  */
 export async function verifyBinaryProof(
-  _rootHash: Uint8Array,
-  _key: Uint8Array,
-  _proof: Uint8Array[],
+  rootHash: Uint8Array,
+  key: Uint8Array,
+  proof: Uint8Array[],
 ): Promise<Uint8Array | null> {
-  const proofTrie = await binaryTreeFromProof(_proof)
-  const [value] = await proofTrie.get(_key.slice(0, 31), [_key[31]])
-  const valueNode = decodeBinaryNode(_proof[_proof.length - 1]) as StemBinaryNode
-  const expectedValue = valueNode.values[_key[31]]
+  const proofTrie = await binaryTreeFromProof(proof)
+  const [value] = await proofTrie.get(key.slice(0, 31), [key[31]])
+  const valueNode = decodeBinaryNode(proof[proof.length - 1]) as StemBinaryNode
+  const expectedValue = valueNode.values[key[31]]
   if (!expectedValue) {
     if (value) {
       throw new Error('Proof is invalid')
